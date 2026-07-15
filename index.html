@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>부산 축제 탐색</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: #1AB3FF;
+    }
+
+    #map-container {
+        position: relative;
+    }
+
+    #map-container img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+    #marker-layer {
+        position: absolute;
+        inset: 0;
+    }
+
+    .region-marker {
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 9999px;
+        border: 2px solid #ffffff;
+        background: rgba(255, 255, 255, 0.75);
+        transform: translate(-50%, -50%);
+        transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+
+    .region-marker:hover,
+    .region-marker.selected {
+        transform: translate(-50%, -50%) scale(1.8);
+        background: rgba(56, 189, 248, 0.85);
+        box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .region-marker.selected {
+        background: rgba(14, 165, 233, 0.95);
+    }
+
+    .region-marker::after {
+        content: attr(data-region);
+        position: absolute;
+        left: 50%;
+        top: -0.75rem;
+        transform: translate(-50%, -100%) scale(0);
+        transform-origin: bottom center;
+        padding: 0.25rem 0.55rem;
+        border-radius: 9999px;
+        background: rgba(15, 23, 42, 0.92);
+        color: #ffffff;
+        font-size: 0.72rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        z-index: 2;
+    }
+
+    .region-marker:hover::after {
+        transform: translate(-50%, -100%) scale(1);
+        opacity: 1;
+    }
+
+    .coord-dot {
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        border: 3px solid #38bdf8;
+        border-radius: 9999px;
+        background: rgba(56, 189, 248, 0.35);
+        transform: translate(-50%, -50%);
+        z-index: 15;
+        pointer-events: none;
+    }
+
+    #coord-panel.hidden {
+        display: none;
+    }
+
+  </style>
+</head>
+<body class="text-slate-900">
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    <section class="mb-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900">부산 축제 탐색</h1>
+                <p class="mt-2 text-slate-700">PNG 지도 위에 16개 구·군 마커를 배치합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="map-container"
+        class="relative mx-auto max-w-5xl overflow-hidden rounded-[30px] bg-slate-50/70 border border-white/40 shadow-[0_32px_80px_rgba(2,51,103,0.14)]">
+        <img src="busan-map.png" alt="부산 16개 구·군 지도" />
+        <div id="marker-layer" class="absolute inset-0"></div>
+    </section>
+
+    <section id="festival-panel" class="space-y-4 mt-8">
+        <div class="rounded-[2rem] bg-white/95 p-6 shadow-xl">
+            <h2 class="text-2xl font-semibold">선택된 지역 축제</h2>
+            <p id="festival-message" class="mt-3 text-slate-600">
+            구·군을 클릭하면 축제 목록이 표시됩니다.
+            </p>
+        </div>
+    </section>
+  </main>
+
+  <script>
+    const regionCoords = [
+        { name: '강서구', left: 22.8, top: 64.9 },
+        { name: '금정구', left: 57.6, top: 33.7 },
+        { name: '기장군', left: 77.7, top: 25.8 },
+        { name: '남구', left: 59.4, top: 65.2 },
+        { name: '동구', left: 50.6, top: 65.4 },
+        { name: '동래구', left: 56.3, top: 45.5 },
+        { name: '부산진구', left: 49.9, top: 56.0 },
+        { name: '북구', left: 45.8, top: 41.4 },
+        { name: '사상구', left: 39.6, top: 57.2 },
+        { name: '사하구', left: 38.9, top: 74.8 },
+        { name: '서구', left: 45.0, top: 66.7 },
+        { name: '수영구', left: 62.3, top: 56.1 },
+        { name: '연제구', left: 56.6, top: 50.9 },
+        { name: '영도구', left: 53.9, top: 75.6 },
+        { name: '중구', left: 48.2, top: 70.3 },
+        { name: '해운대구', left: 69.2, top: 49.8 }
+    ];
+
+    const mapContainer = document.getElementById('map-container');
+    const markerLayer = document.getElementById('marker-layer');
+    const mapImage = mapContainer.querySelector('img');
+
+    let selectedRegion = null;
+
+    function createMarker(region) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'region-marker';
+        button.dataset.region = region.name;
+        button.setAttribute('aria-label', `${region.name} 선택`);
+        button.style.left = `${region.left}%`;
+        button.style.top = `${region.top}%`;
+
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            handleMarkerClick(region.name, button);
+        });
+
+        button.addEventListener('mouseenter', () => {
+            if (!selectedRegion && typeof updatePanel === 'function') {
+                updatePanel(region.name, true);
+            }
+        });
+
+        button.addEventListener('mouseleave', () => {
+            if (!selectedRegion && typeof resetPanel === 'function') {
+                resetPanel();
+            }
+        });
+
+        return button;
+    }
+
+    function renderMarkers() {
+        markerLayer.innerHTML = '';
+        regionCoords.forEach((region) => {
+            markerLayer.appendChild(createMarker(region));
+        });
+    }
+
+    function clearSelection() {
+        selectedRegion = null;
+        document.querySelectorAll('.region-marker.selected').forEach((btn) => btn.classList.remove('selected'));
+    }
+
+    function handleMarkerClick(regionName, button) {
+        if (selectedRegion === regionName) {
+            clearSelection();
+            if (typeof resetPanel === 'function') resetPanel();
+            return;
+        }
+
+        clearSelection();
+        button.classList.add('selected');
+        selectedRegion = regionName;
+
+        if (typeof updatePanel === 'function') updatePanel(regionName, false);
+
+        const festivalPanel = document.getElementById('festival-panel');
+        if (festivalPanel) festivalPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function init() {
+        renderMarkers();
+    }
+
+    init();
+  </script>
+</body>
+</html>
