@@ -1,3 +1,6 @@
+라이트 톤으로 정리한 busan/src/components/Chatbot.vue 전체 코드입니다.
+
+```vue
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
 import festivalsData from '../assets/festivals.json'
@@ -81,7 +84,7 @@ async function sendMessage() {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...messages.value.slice(-10) // 메모리 절약을 위한 최근 10개 대화 맥락 유지
+          ...messages.value.slice(-10)
         ],
         temperature: 0.7,
         max_tokens: 400
@@ -131,18 +134,18 @@ async function sendMessage() {
     <!-- 챗봇 패널 -->
     <div
       v-if="isOpen"
-      class="mt-3 w-[92vw] max-w-sm overflow-hidden rounded-3xl border border-slate-700 bg-slate-900/95 shadow-2xl shadow-black/40 backdrop-blur"
+      class="mt-3 w-[92vw] max-w-sm overflow-hidden rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-200/70 backdrop-blur"
     >
       <!-- 헤더 -->
-      <div class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+      <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div>
-          <p class="text-sm font-semibold text-white">부기</p>
-          <p class="text-xs text-slate-400">부산 여행 가이드 챗봇</p>
+          <p class="text-sm font-semibold text-slate-900">부기</p>
+          <p class="text-xs text-slate-500">부산 여행 가이드 챗봇</p>
         </div>
 
         <button
           type="button"
-          class="rounded-full bg-slate-800 px-2.5 py-1 text-sm text-slate-300 hover:bg-slate-700 transition"
+          class="rounded-full bg-slate-100 px-2.5 py-1 text-sm text-slate-600 transition hover:bg-slate-200"
           @click="toggleChat"
         >
           ✕
@@ -150,8 +153,8 @@ async function sendMessage() {
       </div>
 
       <!-- 대화창 본문 -->
-      <div 
-        ref="chatBody" 
+      <div
+        ref="chatBody"
         class="flex h-80 flex-col gap-2 overflow-y-auto px-4 py-3 scrollbar-thin"
       >
         <div
@@ -160,8 +163,8 @@ async function sendMessage() {
           :class="[
             'max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-6 whitespace-pre-wrap',
             msg.role === 'user'
-              ? 'self-end bg-cyan-500 text-white rounded-tr-none'
-              : 'self-start bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700/40'
+              ? 'self-end rounded-tr-none bg-cyan-500 text-white'
+              : 'self-start rounded-tl-none border border-slate-200 bg-slate-50 text-slate-700'
           ]"
         >
           {{ msg.content }}
@@ -170,13 +173,13 @@ async function sendMessage() {
         <!-- 답변 로딩 상태 -->
         <div
           v-if="isLoading"
-          class="self-start max-w-[85%] rounded-2xl bg-slate-800 px-3 py-2 text-sm text-slate-300 rounded-tl-none border border-slate-700/40"
+          class="self-start max-w-[85%] rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 rounded-tl-none"
         >
           <span class="flex items-center gap-2">
             <span class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></span>
             <span class="h-2 w-2 animate-pulse rounded-full bg-cyan-400 [animation-delay:120ms]"></span>
             <span class="h-2 w-2 animate-pulse rounded-full bg-cyan-400 [animation-delay:240ms]"></span>
-            <span class="text-xs text-slate-400 font-medium">부기가 생각 중...</span>
+            <span class="text-xs font-medium text-slate-500">부기가 생각 중...</span>
           </span>
         </div>
       </div>
@@ -184,19 +187,18 @@ async function sendMessage() {
       <!-- 에러 메세지 오버레이 -->
       <div
         v-if="errorMessage"
-        class="mx-4 mb-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300"
+        class="mx-4 mb-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600"
       >
         {{ errorMessage }}
       </div>
 
-      <!-- 💡 입력 영역: HTML 표준 Form 전송 구조로 개편하여 반응성 극대화 -->
-      <form @submit.prevent="sendMessage" class="border-t border-slate-700 p-3 bg-slate-950/20">
+      <form @submit.prevent="sendMessage" class="border-t border-slate-200 bg-slate-50 p-3">
         <div class="flex gap-2">
           <input
             v-model="inputValue"
             type="text"
             placeholder="부산에서 뭐가 좋을까?"
-            class="flex-1 rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white outline-none focus:border-cyan-400 placeholder-slate-500 disabled:opacity-50"
+            class="flex-1 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-cyan-400 placeholder-slate-400 disabled:opacity-50"
             :disabled="isLoading"
           />
 
@@ -214,7 +216,6 @@ async function sendMessage() {
 </template>
 
 <style scoped>
-/* 부드럽고 얇은 스크롤바 디자인 터치 */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }
@@ -222,7 +223,8 @@ async function sendMessage() {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.12);
   border-radius: 999px;
 }
 </style>
+```

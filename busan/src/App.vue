@@ -27,10 +27,10 @@ function goToReviews() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-950 text-white font-sans flex flex-col">
+  <div class="min-h-screen bg-[#f8fafc] text-slate-800 font-sans flex flex-col">
     
     <!-- 🌟 1. 상단 고정 네비게이션 헤더 바 -->
-    <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 py-4 shadow-lg shadow-black/20">
+    <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md px-6 py-4 shadow-sm shadow-slate-200/70">
       <div class="mx-auto max-w-7xl flex items-center justify-between gap-4">
         
         <!-- 로고 (클릭 시 메인 지도로 복귀) -->
@@ -49,8 +49,8 @@ function goToReviews() {
             @click="goToHome"
             class="rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
             :class="currentView === 'home' || currentView === 'detail'
-              ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+              ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20 scale-105'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             🗺️ 축제 탐색
           </button>
@@ -61,8 +61,8 @@ function goToReviews() {
             @click="goToReviews"
             class="rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
             :class="currentView === 'reviews'
-              ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+              ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20 scale-105'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             💬 커뮤니티
           </button>
@@ -86,7 +86,7 @@ function goToReviews() {
           <button
             type="button"
             @click="goToHome"
-            class="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-300 hover:border-cyan-400 hover:text-white transition"
+            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-sky-400 hover:text-slate-900 transition"
           >
             <i class="fa-solid fa-arrow-left"></i> 뒤로가기 (지도 보기)
           </button>

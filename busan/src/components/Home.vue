@@ -276,7 +276,7 @@ onMounted(() => {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  background: var(--muted);
+  background: #f8fafc;
   color: var(--title-color);
 }
 
@@ -295,7 +295,8 @@ onMounted(() => {
   flex-direction: column;
   gap: 16px;
   padding: 28px;
-  background: #fff;
+  background: linear-gradient(145deg, #ffffff, #f8fbff);
+  border-right: 1px solid var(--panel-border);
 }
 
 .map-header h1 {
@@ -319,8 +320,8 @@ onMounted(() => {
   color: var(--text-muted);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
   font-size: 13px;
 }
 
@@ -331,8 +332,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 18px;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
 }
 
 #map-coordinate-wrapper {
@@ -432,8 +435,9 @@ onMounted(() => {
   flex-basis: 38%;
   flex-direction: column;
   padding: 20px;
-  border-left: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: -8px 0 24px rgba(2, 6, 23, 0.04);
+  border-left: 1px solid var(--panel-border);
+  box-shadow: -6px 0 24px rgba(15, 23, 42, 0.04);
+  background: #ffffff;
 }
 
 .panel-header {
@@ -482,7 +486,7 @@ onMounted(() => {
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.04);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
 }
 
 .empty-card-inner {
@@ -503,7 +507,7 @@ onMounted(() => {
   color: var(--title-color);
   border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 999px;
-  background: #fff;
+  background: #ffffff;
   font-size: 13px;
   font-weight: 700;
 }
@@ -517,8 +521,8 @@ onMounted(() => {
   padding: 12px;
   border: 1px solid rgba(15, 23, 42, 0.04);
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
