@@ -8,7 +8,7 @@ const allReviews = ref([])
 const searchQuery = ref('')
 const selectedRating = ref('all') // 'all' | '5' | '4' | '3' | '2' | '1'
 
-// 브라우저의 모든 서랍을 싹 스캔해서 리뷰 데이터를 수집하는 핵심 함수
+// 💡 브라우저의 모든 서랍을 싹 스캔해서 리뷰 데이터를 수집하는 핵심 함수
 function loadAllReviews() {
   if (typeof window === 'undefined') return
   const loaded = []
@@ -49,7 +49,7 @@ function loadAllReviews() {
   allReviews.value = loaded.sort((a, b) => b.id - a.id)
 }
 
-//  검색 및 별점 필터링을 반영하는 실시간 컴퓨터 변수
+// 💡 검색 및 별점 필터링을 반영하는 실시간 컴퓨터 변수
 const filteredReviews = computed(() => {
   return allReviews.value.filter(review => {
     const matchesSearch = 

@@ -18,7 +18,7 @@ const messages = ref([
 ])
 
 const systemPrompt = `
-당신은 부산 찐 토박이이자, 부산을 방문한 또래 친구를 가이드해 주는 친근하고 유쾌한 부산 마스코트 '부기'입니다.
+당신은 부산 찐 토박이이자, 부산을 방문한 또래 친구를 가이드해 주는 친근하고 유쾌한 동네 친구 'LocalHub 대장'입니다.
 절대로 존댓말을 쓰지 말고, 항상 허물없는 '반말'로 답변하세요. 마치 아주 오래된 절친(고향 친구)을 대하듯 하세요.
 답변할 때는 표준어 반말 대신, 실제 부산 사람들이 쓰는 자연스럽고 찰진 부산 사투리 반말(예: ~했나?, ~있제?, ~해라, ~마!)을 적극적으로 사용하세요.
 부산 축제, 맛집, 숨은 명소, 야간 여행, 가족 여행, 커플 여행, 반려동물 동행, 이동 편의성까지 친구한테 '야, 여기 대박이다'라며 추천하듯이 적극적으로 소개해 주세요.
@@ -78,7 +78,7 @@ async function sendMessage() {
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-5o-mini',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages.value.slice(-10) // 메모리 절약을 위한 최근 10개 대화 맥락 유지
@@ -106,7 +106,7 @@ async function sendMessage() {
     messages.value.push({
       role: 'assistant',
       content:
-        '아이고 미안합니데이. 쫌 이따 다시 해 보이소. OpenAI API 연결하는 데 문제가 좀 생깄네예ㅠㅠ'
+        '죄송해요. 잠시 후 다시 시도해 주세요. OpenAI API 연결에 문제가 생겼어요.'
     })
     errorMessage.value =
       err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'

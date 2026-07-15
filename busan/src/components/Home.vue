@@ -1,10 +1,14 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import festivalsData from '../assets/festivals.json'
+import attractionsData from '../assets/attractions.json'
+
+// 💡 Vite 환경에서 경로 에러가 나지 않도록 이미지를 코드로 직접 안전하게 가져옵니다.
 import busanMapImage from '../assets/busan-map.png'
 
 const emit = defineEmits(['select-festival'])
 
+// 원본 파일의 구·군 좌표 데이터 유지
 const regionCoords = [
   { name: '강서구', left: 22.8, top: 64.9 },
   { name: '금정구', left: 57.6, top: 33.7 },
@@ -26,17 +30,46 @@ const regionCoords = [
 
 const selectedRegion = ref(null) // 마우스 클릭으로 '고정 선택'된 지역
 const hoveredRegion = ref(null)   // 마우스 호버로 '임시 탐색' 중인 지역
-const showAllView = ref(false)     // 💡 전체 축제 목록을 페이지처럼 풀스크린으로 볼지 여부
 
 const likesMeta = ref({})
 const festivalItems = ref([])
 const isDataLoaded = ref(false)
 const dataLoadError = ref(null)
 
-const activeRegion = computed(() => {
-  return selectedRegion.value || hoveredRegion.value
+function summarizeText(text, limit = 70) {
+  if (!text) return '부산의 대표적인 여행 포인트를 직접 확인해보세요.'
+
+  const cleaned = String(text).replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+  return cleaned.length > limit ? `${cleaned.slice(0, limit)}...` : cleaned
+}
+
+const featuredItems = computed(() => {
+  const festivalHighlights = (festivalsData?.items ?? [])
+    .filter((item) => item?.firstimage || item?.firstimage2)
+    .slice(0, 2)
+    .map((item) => ({
+      type: '축제',
+      title: item.title || '부산 축제',
+      description: summarizeText(item.program, 60),
+      image: item.firstimage || item.firstimage2 || '',
+      contentid: item.contentid
+    }))
+
+  const attractionHighlights = (attractionsData?.items ?? [])
+    .filter((item) => item?.firstimage || item?.firstimage2)
+    .slice(0, 2)
+    .map((item) => ({
+      type: '관광지',
+      title: item.title || '부산 명소',
+      description: summarizeText(item.addr1 || '부산의 대표 명소를 직접 만나보세요.', 60),
+      image: item.firstimage || item.firstimage2 || '',
+      contentid: item.contentid
+    }))
+
+  return [...festivalHighlights, ...attractionHighlights]
 })
 
+// 💡 로컬 스토리지에 저장된 실시간 좋아요 메타 정보 가져오기
 function loadLikesMeta() {
   if (typeof window === 'undefined') return
 
@@ -49,6 +82,7 @@ function loadLikesMeta() {
       const fallback = {}
       const items = festivalsData?.items ?? []
 
+      // 처음 접속 시 기본 하트 개수는 모두 0개로 깨끗하게 설정합니다.
       items.forEach((item) => {
         fallback[String(item.contentid)] = 0
       })
@@ -67,12 +101,13 @@ function getLikeCount(contentid) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+// 💡 주소에 구 이름이 포함되어 있는 축제들을 필터링합니다.
 function getFestivalsByRegion(regionName) {
   return festivalItems.value.filter((item) => item?.addr1?.includes(regionName))
 }
 
+// 💡 지도 마커 클릭 시 동작 제어 (이미 선택된 곳을 다시 클릭하면 선택 해제)
 function handleMarkerClick(regionName) {
-  showAllView.value = false // 다른 구를 누르면 전체보기 탈출
   if (selectedRegion.value === regionName) {
     selectedRegion.value = null
     return
@@ -80,73 +115,30 @@ function handleMarkerClick(regionName) {
   selectedRegion.value = regionName
 }
 
+// 💡 축제 카드를 클릭하면 상세페이지로 ID를 던져주는 이벤트 발생
 function selectFestival(contentid) {
   emit('select-festival', String(contentid))
 }
 
-// YYYYMMDD 날짜 포맷 함수
-function formatDate(dateStr) {
-  if (!dateStr) return '미정'
-  return `${dateStr.substring(0, 4)}.${dateStr.substring(4, 6)}.${dateStr.substring(6, 8)}`
+function handleFeaturedCardClick(item) {
+  if (item?.type === '축제' && item.contentid) {
+    selectFestival(item.contentid)
+  }
 }
 
-// 💡 축제의 실시간 진행 상태 및 스타일 배지 반환 함수
-function getFestivalStatus(item) {
-  const todayStr = '20260715' // 현재 시스템 타임스탬프 기준
-  if (!item.eventstartdate || !item.eventenddate) return { text: '일정 미정', class: 'bg-slate-800 text-slate-400' }
-  if (item.eventenddate < todayStr) return { text: '종료된 행사', class: 'bg-slate-950/80 text-slate-500 border border-slate-800' }
-  if (item.eventstartdate <= todayStr && item.eventenddate >= todayStr) return { text: '🥳 진행 중!', class: 'bg-emerald-500 text-white' }
-  return { text: '📅 진행 예정', class: 'bg-cyan-500 text-white' }
-}
-
-// 구별 필터링용 소스
+// 💡 클릭(고정) 혹은 호버(임시)된 타겟 지역의 축제들을 실시간 좋아요 '인기 내림차순'으로 정렬합니다.
 const filteredAndSortedFestivals = computed(() => {
-  if (!activeRegion.value) return []
+  const targetRegion = selectedRegion.value || hoveredRegion.value
+  if (!targetRegion) return []
 
-  return getFestivalsByRegion(activeRegion.value)
+  return getFestivalsByRegion(targetRegion)
     .map((item) => ({ ...item, likeCount: getLikeCount(item.contentid) }))
     .sort((a, b) => {
       if (b.likeCount !== a.likeCount) {
-        return b.likeCount - a.likeCount
+        return b.likeCount - a.likeCount // 좋아요 많은 순 정렬
       }
-      return (a.title || '').localeCompare(b.title || '')
+      return (a.title || '').localeCompare(b.title || '') // 동점일 경우 가나다순 정렬
     })
-})
-
-// 💡 요구사항 반영: [진행중/예정 ➡️ 시작일 가까운 순] 먼저 배치 후 [종료됨 ➡️ 최근 종료 순] 결합 정렬
-const allSortedFestivals = computed(() => {
-  const todayStr = '20260715'
-  
-  const upcomingOrOngoing = []
-  const ended = []
-
-  festivalItems.value.forEach(item => {
-    const mappedItem = { ...item, likeCount: getLikeCount(item.contentid) }
-    if (!item.eventenddate || item.eventenddate >= todayStr) {
-      upcomingOrOngoing.push(mappedItem)
-    } else {
-      ended.push(mappedItem)
-    }
-  })
-
-  // 1. 아직 종료되지 않은 행사: 시작일이 가까운 순(오름차순)
-  upcomingOrOngoing.sort((a, b) => {
-    if (a.eventstartdate !== b.eventstartdate) {
-      return (a.eventstartdate || '').localeCompare(b.eventstartdate || '')
-    }
-    return (a.title || '').localeCompare(b.title || '')
-  })
-
-  // 2. 이미 종료된 행사: 최근에 종료된 순(내림차순)
-  ended.sort((a, b) => {
-    if (b.eventenddate !== a.eventenddate) {
-      return (b.eventenddate || '').localeCompare(a.eventenddate || '')
-    }
-    return (a.title || '').localeCompare(b.title || '')
-  })
-
-  // 두 그룹을 위아래로 결합
-  return [...upcomingOrOngoing, ...ended]
 })
 
 const totalFestivalCount = computed(() => {
@@ -162,88 +154,10 @@ onMounted(() => {
 
 <template>
   <div class="app-layout">
-    
-    <!-- 🌟 1. 요구사항 반영: 전체 축제 목록 풀페이지 뷰 모드 (상세페이지처럼 전체화면 장악) -->
-    <div v-if="showAllView" class="full-screen-festivals bg-slate-950 min-h-screen text-white px-4 py-8 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl space-y-6">
-        
-        <!-- 대화형 탑바 -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
-          <div>
-            <h1 class="text-2xl font-black text-white flex items-center gap-2">
-              ✨ 부산 축제 전체 타임라인
-            </h1>
-            <p class="text-xs text-slate-400 mt-1">
-              현재 진행 중이거나 다가오는 축제가 먼저 나오며, 종료된 행사는 최근 종료 순서대로 하단에 배치됩니다.
-            </p>
-          </div>
-          <button 
-            type="button" 
-            class="rounded-full border border-slate-700 bg-slate-900 px-5 py-2 text-sm font-semibold hover:border-cyan-400 hover:text-cyan-400 transition whitespace-nowrap self-start sm:self-auto"
-            @click="showAllView = false"
-          >
-            🗺️ 지도 보기로 돌아가기
-          </button>
-        </div>
-
-        <!-- 3열 와이드 그리드 플레이트 -->
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <article
-            v-for="item in allSortedFestivals"
-            :key="item.contentid"
-            class="group bg-slate-900/40 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-cyan-500/40 hover:bg-slate-900/80 transition duration-300 cursor-pointer flex flex-col shadow-lg"
-            @click="selectFestival(item.contentid)"
-          >
-            <!-- 썸네일 존 -->
-            <div class="relative w-full h-48 bg-slate-950 flex items-center justify-center overflow-hidden">
-              <img
-                v-if="item.firstimage || item.firstimage2"
-                :src="item.firstimage || item.firstimage2"
-                :alt="item.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                loading="lazy"
-              />
-              <div v-else class="text-slate-700 text-3xl">
-                <i class="fa-regular fa-image"></i>
-              </div>
-              
-              <!-- 동적 진행 상태 배지 -->
-              <span 
-                class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wide shadow-md"
-                :class="getFestivalStatus(item).class"
-              >
-                {{ getFestivalStatus(item).text }}
-              </span>
-            </div>
-
-            <!-- 디테일 텍스트 존 -->
-            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-              <div class="space-y-2">
-                <div class="flex items-start justify-between gap-3">
-                  <h5 class="font-bold text-base text-slate-100 group-hover:text-cyan-400 transition line-clamp-1">
-                    {{ item.title }}
-                  </h5>
-                  <span class="text-xs font-bold text-rose-400 flex items-center gap-1 shrink-0 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                    ❤️ {{ item.likeCount }}
-                  </span>
-                </div>
-                
-                <p class="text-xs text-cyan-400 font-semibold font-mono">
-                  🗓️ {{ formatDate(item.eventstartdate) }} ~ {{ formatDate(item.eventenddate) }}
-                </p>
-              </div>
-              <p class="text-xs text-slate-400 line-clamp-1 border-t border-slate-800/60 pt-2">
-                📍 {{ item.addr1 }}
-              </p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </div>
-
-    <!-- 🌟 2. 기존 지도 분할화면 대시보드 모드 (showAllView가 꺼져있을 때 출력) -->
-    <div v-else class="split">
-      <!-- 좌측 지도 영역 -->
+    <div class="split">
+      <!-- =========================
+           좌측 지도 영역
+      ========================== -->
       <aside class="map-area">
         <div class="map-header">
           <h1>부산 축제 지도</h1>
@@ -255,11 +169,50 @@ onMounted(() => {
           <span>원하는 지역을 클릭해보세요</span>
         </div>
 
+        <section class="intro-card" aria-label="부산 여행 소개">
+          <div class="intro-copy">
+            <p class="section-label">부산 여행의 시작</p>
+            <h2>바다와 밤의 감성, 축제와 명소가 함께 펼쳐지는 부산</h2>
+            <p>
+              해운대의 바다, 광안리의 야경, 지역 축제와 다양한 명소까지 한눈에 확인해보세요.
+              지도를 살펴보며 여행 계획을 짜고, 마음에 드는 축제를 바로 탐색해보세요.
+            </p>
+          </div>
+          <div class="intro-actions">
+            <span class="chip">추천 여행지</span>
+            <span class="chip">축제 탐색</span>
+            <span class="chip">부산 감성</span>
+          </div>
+        </section>
+
+        <section class="feature-strip" aria-label="추천 관광지 및 축제">
+          <article
+            v-for="item in featuredItems"
+            :key="`${item.type}-${item.title}`"
+            class="feature-card"
+            @click="handleFeaturedCardClick(item)"
+          >
+            <div v-if="item.image" class="feature-image">
+              <img :src="item.image" :alt="item.title" loading="lazy" />
+            </div>
+            <div v-else class="feature-image feature-image-placeholder">
+              <i class="fa-regular fa-image"></i>
+            </div>
+
+            <div class="feature-body">
+              <span class="feature-tag">{{ item.type }}</span>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.description }}</p>
+            </div>
+          </article>
+        </section>
+
         <section id="map-container" aria-label="부산 지도">
           <div id="map-coordinate-wrapper">
             <img :src="busanMapImage" alt="부산 16개 구·군 지도" />
             
             <div id="marker-layer" aria-hidden="false">
+              <!-- 💡 마우스 호버와 클릭 이벤트를 분리하여 데이터 오버랩 버그를 해결했습니다. -->
               <button
                 v-for="region in regionCoords"
                 :key="region.name"
@@ -283,7 +236,9 @@ onMounted(() => {
         </div>
       </aside>
 
-      <!-- 우측 축제 정보 패널 -->
+      <!-- =========================
+           우측 축제 정보 패널
+      ========================== -->
       <aside class="panel-area" role="region" aria-label="축제 정보 패널">
         <div class="panel-header">
           <div class="panel-title-block">
@@ -291,13 +246,7 @@ onMounted(() => {
             <span>선택된 지역의 축제 정보를 확인하세요</span>
           </div>
 
-          <!-- 클릭 시 풀페이지 전체보기 모드로 넘어가도록 바인딩 -->
-          <div 
-            class="badge cursor-pointer hover:bg-slate-100 hover:text-cyan-600 border hover:border-cyan-400 active:scale-95 transition-all"
-            @click="showAllView = true"
-          >
-            전체 축제 {{ totalFestivalCount }}
-          </div>
+          <div class="badge">전체 축제 {{ totalFestivalCount }}</div>
         </div>
 
         <div class="panel-body">
@@ -319,8 +268,8 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 3. 초기 기본 상태 -->
-          <div v-else-if="!activeRegion" class="empty-card" aria-live="polite">
+          <!-- 3. 초기 기본 상태 (아무 행동도 안 하고 있을 때) -->
+          <div v-else-if="!selectedRegion && !hoveredRegion" class="empty-card" aria-live="polite">
             <div class="empty-card-inner">
               <div class="empty-icon"><i class="fa-regular fa-calendar"></i></div>
               <h3>지역을 선택해주세요</h3>
@@ -328,17 +277,26 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 4. 클릭 고정 상태 -->
+          <!-- 4. 호버 미리보기 상태 (선택된 구가 없는데 마우스만 마커에 올렸을 때) -->
+          <div v-else-if="!selectedRegion && hoveredRegion" class="empty-card" aria-live="polite">
+            <div class="empty-card-inner">
+              <div class="empty-icon"><i class="fa-solid fa-circle-info"></i></div>
+              <h3>{{ hoveredRegion }} 축제 {{ getFestivalsByRegion(hoveredRegion).length }}개</h3>
+              <p>클릭하면 해당 지역의 축제 목록을 확인할 수 있습니다.</p>
+            </div>
+          </div>
+
+          <!-- 5. 클릭 고정 상태 (구가 선택되어 리스트를 안정적으로 출력할 때) -->
           <div v-else class="region-selected">
             <div class="region-head">
-              <h4>{{ activeRegion }} 축제</h4>
+              <h4>{{ selectedRegion }} 축제</h4>
               <p>선택한 지역의 축제 정보를 확인하세요</p>
             </div>
 
             <div v-if="filteredAndSortedFestivals.length === 0" class="empty-card">
               <div class="empty-card-inner">
                 <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                <h3>{{ activeRegion }} 축제</h3>
+                <h3>{{ selectedRegion }} 축제</h3>
                 <p>현재 이 지역에 등록된 축제·행사 데이터가 없습니다.</p>
               </div>
             </div>
@@ -384,6 +342,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* 💡 Scoped 설정을 통해 전역 스타일과의 오염을 방지하고 이 컴포넌트만의 유니크한 레이아웃을 보장합니다. */
 .app-layout {
   --panel-radius: 14px;
   --muted: #f8fafc;
@@ -406,6 +365,7 @@ onMounted(() => {
   gap: 0;
 }
 
+/* 좌측 지도 영역 */
 .map-area {
   display: flex;
   box-sizing: border-box;
@@ -440,6 +400,134 @@ onMounted(() => {
   background: #fff;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
   font-size: 13px;
+}
+
+ .intro-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef7ff 100%);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.04);
+}
+
+.section-label {
+  margin: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro-copy h2 {
+  margin: 4px 0 8px;
+  color: var(--title-color);
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.intro-copy p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.08);
+  color: #0369a1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.04);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.08);
+}
+
+.feature-image {
+  height: 132px;
+  background: #f8fafc;
+}
+
+.feature-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feature-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 22px;
+}
+
+.feature-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 14px;
+}
+
+.feature-tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.feature-body h3 {
+  margin: 0;
+  color: var(--title-color);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.feature-body p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 #map-container {
@@ -478,6 +566,7 @@ onMounted(() => {
   pointer-events: none;
 }
 
+/* 지도 마커 */
 .region-marker {
   position: absolute;
   width: 32px;
@@ -542,6 +631,7 @@ onMounted(() => {
   transform: translate(-50%, -100%) scale(1);
 }
 
+/* 우측 정보 패널 */
 .panel-area {
   display: flex;
   box-sizing: border-box;
@@ -624,6 +714,7 @@ onMounted(() => {
   font-weight: 700;
 }
 
+/* 축제 카드 */
 .festival-card > .card-inner {
   display: flex;
   align-items: flex-start;
@@ -754,6 +845,7 @@ onMounted(() => {
   font-size: 13px;
 }
 
+/* 반응형 모바일 브레이크 포인트 적용 */
 @media (max-width: 1023px) {
   .split {
     flex-direction: column;
@@ -769,6 +861,18 @@ onMounted(() => {
   .panel-body {
     height: auto;
     overflow: visible;
+  }
+
+  .intro-card {
+    padding: 16px;
+  }
+
+  .feature-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-image {
+    height: 170px;
   }
 
   #map-container {
