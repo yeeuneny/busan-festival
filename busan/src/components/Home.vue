@@ -154,7 +154,7 @@ onMounted(() => {
 
         <div class="tip-row">
           <i class="fa-solid fa-location-dot"></i>
-          <small>TIP. 마우스를 올리면 지역명을 확인할 수 있어요</small>
+          <small>! TIP. 마우스를 올리면 지역명을 확인할 수 있어요</small>
         </div>
       </aside>
 
