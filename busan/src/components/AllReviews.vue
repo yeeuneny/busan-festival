@@ -99,7 +99,7 @@ onMounted(() => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="축제 이름, 후기 내용, 닉네임으로 검색하세예..."
+          placeholder="축제 이름, 후기 내용, 닉네임으로 검색하세요"
           class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-400"
         />
         
@@ -124,7 +124,7 @@ onMounted(() => {
           class="rounded-[24px] border border-dashed border-slate-800 bg-slate-900/20 p-12 text-center text-slate-400"
         >
           <div class="text-4xl mb-3">💬</div>
-          <p class="font-medium text-slate-300">작성된 한 줄 후기가 없습니데이.</p>
+          <p class="font-medium text-slate-300">작성된 한 줄 후기가 없습니다.</p>
           <p class="text-xs text-slate-500 mt-1">지도를 통해 축제를 선택하고 생생한 첫 후기를 남겨보세요!</p>
         </div>
 
