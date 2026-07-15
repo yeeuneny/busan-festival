@@ -1,6 +1,3 @@
-요청하신 `FestivalDetail.vue`의 다크 모드 스타일을 라이트 모드로 변경한 전체 코드를 작성하였습니다. 배경은 밝은 톤(`bg-slate-50`, `bg-white`)으로, 텍스트와 테두리는 어두운 톤(`text-slate-900`, `border-slate-200` 등)으로 수정되었습니다.
-
-```vue
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
 import FestivalDetailMap from './FestivalDetailMap.vue'
@@ -22,7 +19,6 @@ const reviews = ref([])
 const editingId = ref(null)
 const errorText = ref('')
 const likesMeta = ref({})
-// 💡 내가 어떤 축제들에 좋아요를 눌렀는지 ID를 저장할 배열 변수
 const myLikes = ref([])
 
 const reviewForm = ref({
@@ -39,13 +35,52 @@ const resolvedFestivalId = computed(() => {
 
 const storageKey = computed(() => `festival-reviews-${resolvedFestivalId.value}`)
 const likesStorageKey = 'busan-festival-likes-meta-v2'
-const myLikesStorageKey = 'busan-festival-user-liked' // 💡 유저 개인의 좋아요 기록 키
+const myLikesStorageKey = 'busan-festival-user-liked' 
 
-// 💡 현재 보고 있는 축제에 내가 좋아요를 눌렀는지 확인하는 컴퓨터 변수
 const isCurrentFestivalLiked = computed(() => {
   if (!selectedFestival.value) return false
   return myLikes.value.includes(String(selectedFestival.value.contentid))
 })
+
+const dDayText = computed(() => {
+  if (!selectedFestival.value || !selectedFestival.value.eventstartdate) return ''
+
+  const startStr = selectedFestival.value.eventstartdate 
+  const endStr = selectedFestival.value.eventenddate     
+
+  const sYear = parseInt(startStr.substring(0, 4))
+  const sMonth = parseInt(startStr.substring(4, 6)) - 1
+  const sDay = parseInt(startStr.substring(6, 8))
+
+  const eYear = parseInt(endStr.substring(0, 4))
+  const eMonth = parseInt(endStr.substring(4, 6)) - 1
+  const eDay = parseInt(endStr.substring(6, 8))
+
+  const startDate = new Date(sYear, sMonth, sDay)
+  const endDate = new Date(eYear, eMonth, eDay, 23, 59, 59)
+  const today = new Date()
+
+  const todayPure = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const startPure = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+
+  const diffMs = startPure.getTime() - todayPure.getTime()
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+  if (today > endDate) {
+    return '종료된 축제'
+  } else if (today >= startDate && today <= endDate) {
+    return '🥳 진행 중!'
+  } else if (diffDays === 0) {
+    return '🔥 오늘 시작!'
+  } else {
+    return `D-${diffDays}`
+  }
+})
+
+function formatDate(dateStr) {
+  if (!dateStr) return '정보 없음'
+  return `${dateStr.substring(0, 4)}년 ${dateStr.substring(4, 6)}월 ${dateStr.substring(6, 8)}일`
+}
 
 function getFestivalById() {
   const items = festivalsData?.items ?? []
@@ -66,7 +101,6 @@ function loadLikesMeta() {
     if (raw) {
       likesMeta.value = JSON.parse(raw)
     } else {
-      // 💡 요구사항 반영: 가짜 데이터 제거하고 처음엔 무조건 하트가 0개로 시작하도록 초기화
       const fallback = {}
       const items = festivalsData?.items ?? []
       items.forEach((item) => {
@@ -81,7 +115,6 @@ function loadLikesMeta() {
   }
 }
 
-// 💡 내가 과거에 눌렀던 좋아요 목록 불러오기
 function loadMyLikes() {
   if (typeof window === 'undefined') return
   try {
@@ -95,11 +128,9 @@ function loadMyLikes() {
 function saveLikesMeta() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(likesStorageKey, JSON.stringify(likesMeta.value))
-  // 다른 컴포넌트(구별 지도 목록 등)에 실시간으로 좋아요가 바뀌었다고 이벤트를 쏴줍니다.
   window.dispatchEvent(new Event('likes-meta-updated'))
 }
 
-// 💡 내가 누른 좋아요 기록 저장하기
 function saveMyLikes() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(myLikesStorageKey, JSON.stringify(myLikes.value))
@@ -111,7 +142,6 @@ function getLikeCount(contentid) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-// 💡 1인 1하트 제한 토글 함수로 전면 수정
 function toggleLike() {
   if (!selectedFestival.value) return
 
@@ -119,20 +149,16 @@ function toggleLike() {
   const currentCount = getLikeCount(id)
 
   if (isCurrentFestivalLiked.value) {
-    // 이미 하트를 누른 축제라면 ➡️ 취소 요청 (-1)
     likesMeta.value = {
       ...likesMeta.value,
       [id]: Math.max(0, currentCount - 1)
     }
-    // 내 하트 기록 배열에서 삭제
     myLikes.value = myLikes.value.filter((item) => item !== id)
   } else {
-    // 처음 누르는 축제라면 ➡️ 하트 추가 (+1)
     likesMeta.value = {
       ...likesMeta.value,
       [id]: currentCount + 1
     }
-    // 내 하트 기록 배열에 추가
     myLikes.value.push(id)
   }
 
@@ -255,108 +281,145 @@ watch(
 onMounted(() => {
   getFestivalById()
   loadLikesMeta()
-  loadMyLikes() // 💡 유저 하트 기록 가져오기 추가
+  loadMyLikes()
   loadReviews()
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl space-y-8">
       <section
         v-if="selectedFestival"
-        class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-200/50"
+        class="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-900/90 shadow-2xl shadow-black/30"
       >
-        <div class="grid gap-8 p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
-          <div class="flex items-center justify-center">
-            <img
-              v-if="selectedFestival.firstimage"
-              :src="selectedFestival.firstimage"
-              :alt="selectedFestival.title"
-              class="h-[340px] w-full rounded-[24px] border border-slate-200 object-cover shadow-md"
-            />
-            <div
-              v-else
-              class="flex h-[340px] w-full items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-100/60 text-slate-500"
-            >
-              이미지가 없습니다
-            </div>
-          </div>
-
-          <div class="flex flex-col justify-center">
-            <div class="mb-4 inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-semibold text-cyan-700">
+        <div class="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
+          
+          <!-- 🌟 [개선 핵심] 상단 와이드 타이틀 헤더 바 (col-span-full로 2열 전체를 덮어 씌움) -->
+          <div class="col-span-full border-b border-slate-800 pb-5">
+            <div class="mb-3 inline-flex w-fit rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
               부산 축제 상세 소개
             </div>
 
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <h1 class="text-3xl font-bold leading-tight sm:text-4xl">
-                {{ selectedFestival.title }}
-              </h1>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex flex-wrap items-center gap-3">
+                <h1 class="text-2xl font-black leading-tight sm:text-3xl text-white">
+                  {{ selectedFestival.title }}
+                </h1>
+                
+                <!-- 남은 일수 디데이 배지 -->
+                <span 
+                  v-if="dDayText"
+                  class="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-black text-slate-950 shadow-md shadow-orange-500/10"
+                >
+                  {{ dDayText }}
+                </span>
+              </div>
 
+              <!-- 좋아요 버튼 -->
               <button
                 type="button"
-                class="rounded-full border px-4 py-2 text-sm font-bold transition shadow-sm"
-                :class="isCurrentFestivalLiked 
-                  ? 'border-rose-500 bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600' 
-                  : 'border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-100'"
+                class="rounded-full border px-4 py-2 text-sm font-bold transition shadow-md self-start sm:self-auto shrink-0"
+                :class="isCurrentFestivalLiked
+                  ? 'border-rose-500 bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600'
+                  : 'border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20'"
                 @click="toggleLike"
               >
                 ❤️ {{ getLikeCount(selectedFestival.contentid) }}
               </button>
             </div>
-
-            <div class="mt-5 space-y-3 text-sm text-slate-600 sm:text-base">
-              <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-                <p class="text-slate-500">주소</p>
-                <p class="mt-1 font-medium text-slate-900">{{ selectedFestival.addr1 || '주소 정보 없음' }}</p>
+          </div>
+          
+          <!-- 📸 좌측 컬럼: 축제 포스터 영역 (제목 아래로 안전하게 정렬됨) -->
+          <div class="flex items-center justify-center bg-slate-950/40 rounded-[24px] border border-slate-800 p-2 overflow-hidden shadow-inner h-[396px]">
+            <div class="w-full h-full overflow-hidden flex items-center justify-center rounded-xl relative select-none">
+              <img
+                v-if="selectedFestival.firstimage"
+                :src="selectedFestival.firstimage"
+                :alt="selectedFestival.title"
+                class="h-[380px] w-full object-contain rounded-xl shadow-md"
+              />
+              <div
+                v-else
+                class="flex h-[380px] w-full items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-800/60 text-slate-400"
+              >
+                이미지가 없습니다
               </div>
+            </div>
+          </div>
 
-              <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-                <p class="text-slate-500">전화번호</p>
-                <p class="mt-1 font-medium text-slate-900">{{ selectedFestival.tel || '전화번호 정보 없음' }}</p>
-              </div>
-
-              <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-                <p class="text-slate-500">축제 소개</p>
-                <p class="mt-1 leading-7 text-slate-600">
-                  이 축제는 부산의 분위기와 특별한 감성을 함께 느낄 수 있는 대표적인 여행 포인트입니다.
-                  주변 관광지와 숙소까지 함께 둘러보며 여행 계획을 완성해보세요.
+          <!-- 📑 우측 컬럼: 상세 메타데이터 출력 스크롤 플레이트 (사진과 균형을 이루도록 max-h 커스텀) -->
+          <div class="flex flex-col justify-start">
+            <div class="space-y-3.5 text-sm text-slate-300 sm:text-base max-h-[396px] overflow-y-auto pr-2 scrollbar-thin">
+              
+              <!-- 1. 축제 시작일과 종료일 -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                <p class="text-xs font-bold text-slate-400 tracking-wider">🗓️ 축제 기간</p>
+                <p class="mt-1.5 font-semibold text-cyan-300">
+                  {{ formatDate(selectedFestival.eventstartdate) }} ~ {{ formatDate(selectedFestival.eventenddate) }}
                 </p>
               </div>
+
+              <!-- 2. 축제 장소 -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                <p class="text-xs font-bold text-slate-400 tracking-wider">📍 축제 장소 (eventplace)</p>
+                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.eventplace || '장소 정보 없음' }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ selectedFestival.addr1 }}</p>
+              </div>
+
+              <!-- 3. playtime -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                <p class="text-xs font-bold text-slate-400 tracking-wider">⏰ 운영 시간 (playtime)</p>
+                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.playtime || '시간 정보 없음' }}</p>
+              </div>
+
+              <!-- 4. usetimefestival -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                <p class="text-xs font-bold text-slate-400 tracking-wider">💰 이용 요금 (usetimefestival)</p>
+                <p class="mt-1.5 font-medium text-white" v-html="selectedFestival.usetimefestival || '정보 없음'"></p>
+              </div>
+
+              <!-- 5. program -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                <p class="text-xs font-bold text-slate-400 tracking-wider">📑 주요 프로그램 (program)</p>
+                <p class="mt-1.5 leading-relaxed text-slate-300 whitespace-pre-wrap text-sm">{{ selectedFestival.program || '프로그램 내용이 없습니다.' }}</p>
+              </div>
+
             </div>
           </div>
         </div>
       </section>
 
-      <section class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/50 sm:p-6">
+      <!-- 지도 및 하단 한 줄 리뷰 섹션 데이터 유지 -->
+      <section class="rounded-[28px] border border-slate-800 bg-slate-900/90 p-4 shadow-2xl shadow-black/30 sm:p-6">
         <FestivalDetailMap :selectedContentId="resolvedFestivalId" />
       </section>
 
-      <section class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/50 sm:p-6">
+      <section class="rounded-[28px] border border-slate-800 bg-slate-900/90 p-4 shadow-2xl shadow-black/30 sm:p-6">
         <div class="mb-5">
-          <h2 class="text-2xl font-semibold text-slate-900">방문자 한 줄 리뷰</h2>
-          <p class="mt-1 text-sm text-slate-500">
+          <h2 class="text-2xl font-semibold text-white">방문자 한 줄 리뷰</h2>
+          <p class="mt-1 text-sm text-slate-400">
             이 축제에 대한 솔직한 후기를 남겨주세요. 수정과 삭제는 비밀번호가 맞아야 가능합니다.
           </p>
         </div>
 
-        <form class="rounded-3xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5" @submit.prevent="submitReview">
+        <form class="rounded-3xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5" @submit.prevent="submitReview">
           <div class="grid gap-4 md:grid-cols-2">
             <div>
-              <label class="mb-2 block text-sm text-slate-600">닉네임</label>
+              <label class="mb-2 block text-sm text-slate-300">닉네임</label>
               <input
                 v-model="reviewForm.nickname"
                 type="text"
                 placeholder="닉네임을 입력하세요"
-                class="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-500"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
               />
             </div>
 
             <div>
-              <label class="mb-2 block text-sm text-slate-600">별점</label>
+              <label class="mb-2 block text-sm text-slate-300">별점</label>
               <select
                 v-model="reviewForm.rating"
-                class="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-500"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
               >
                 <option :value="5">5점</option>
                 <option :value="4">4점</option>
@@ -367,22 +430,22 @@ onMounted(() => {
             </div>
 
             <div class="md:col-span-2">
-              <label class="mb-2 block text-sm text-slate-600">리뷰 내용</label>
+              <label class="mb-2 block text-sm text-slate-300">리뷰 내용</label>
               <textarea
                 v-model="reviewForm.content"
                 rows="4"
                 placeholder="이 축제에 대한 느낌을 남겨주세요."
-                class="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-500"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
               />
             </div>
 
             <div class="md:col-span-2">
-              <label class="mb-2 block text-sm text-slate-600">비밀번호</label>
+              <label class="mb-2 block text-sm text-slate-300">비밀번호</label>
               <input
                 v-model="reviewForm.password"
                 type="password"
                 placeholder="비밀번호를 입력하세요"
-                class="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-500"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
               />
             </div>
           </div>
@@ -390,7 +453,7 @@ onMounted(() => {
           <div class="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="submit"
-              class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-600"
+              class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-400"
             >
               {{ editingId ? '수정 완료' : '리뷰 등록' }}
             </button>
@@ -398,14 +461,14 @@ onMounted(() => {
             <button
               v-if="editingId"
               type="button"
-              class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+              class="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
               @click="resetForm"
             >
               취소
             </button>
           </div>
 
-          <div v-if="errorText" class="mt-3 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          <div v-if="errorText" class="mt-3 rounded-2xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
             {{ errorText }}
           </div>
         </form>
@@ -413,7 +476,7 @@ onMounted(() => {
         <div class="mt-6 space-y-3">
           <div
             v-if="reviews.length === 0"
-            class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-5 text-center text-sm text-slate-500"
+            class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 text-center text-sm text-slate-400"
           >
             아직 등록된 리뷰가 없습니다. 첫 리뷰를 남겨보세요.
           </div>
@@ -421,12 +484,12 @@ onMounted(() => {
           <div
             v-for="review in reviews"
             :key="review.id"
-            class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            class="rounded-2xl border border-slate-800 bg-slate-950/70 p-4"
           >
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p class="font-semibold text-slate-900">{{ review.nickname }}</p>
-                <p class="text-sm text-slate-500">
+                <p class="font-semibold text-white">{{ review.nickname }}</p>
+                <p class="text-sm text-slate-400">
                   {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
                 </p>
               </div>
@@ -434,7 +497,7 @@ onMounted(() => {
               <div class="flex gap-2">
                 <button
                   type="button"
-                  class="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:border-cyan-500 hover:text-cyan-600 hover:bg-cyan-50"
+                  class="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-300 hover:border-cyan-400 hover:text-cyan-300"
                   @click="startEdit(review)"
                 >
                   수정
@@ -442,7 +505,7 @@ onMounted(() => {
 
                 <button
                   type="button"
-                  class="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:border-red-500 hover:text-red-600 hover:bg-red-50"
+                  class="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-300 hover:border-red-400 hover:text-red-300"
                   @click="deleteReview(review)"
                 >
                   삭제
@@ -450,7 +513,7 @@ onMounted(() => {
               </div>
             </div>
 
-            <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+            <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
               {{ review.content }}
             </p>
           </div>
@@ -464,20 +527,28 @@ onMounted(() => {
 :deep(.leaflet-container) {
   font: inherit;
 }
-
 :deep(.leaflet-popup-content-wrapper) {
   padding: 0;
   border-radius: 16px;
   overflow: hidden;
 }
-
 :deep(.leaflet-popup-content) {
   margin: 0;
 }
-
 :deep(.custom-pin),
 :deep(.festival-pin) {
   background: transparent;
   border: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
 }
 </style>

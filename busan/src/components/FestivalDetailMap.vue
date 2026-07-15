@@ -1,8 +1,3 @@
-요청한 `FestivalDetailMap.vue` 파일의 다크 모드 스타일을 라이트 모드로 변환한 전체 코드를 제공함.
-
-배경을 밝은 색상(`bg-white`, `bg-slate-50`)으로 변경하고, 텍스트와 테두리 색상을 어둡게(`text-slate-900`, `border-slate-200`) 조정하여 가독성을 높였음. 또한 지도 위의 필터 버튼과 로딩 오버레이 색상도 라이트 테마에 맞게 수정함.
-
-```vue
 <script setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import L from 'leaflet'
@@ -64,7 +59,7 @@ function findSelectedFestival() {
 function createMarkerIcon(color, size = 30) {
   return L.divIcon({
     html: `
-      <div class="flex items-center justify-center rounded-full border-2 border-white shadow-md" style="width:${size}px;height:${size}px;background:${color};">
+      <div class="flex items-center justify-center rounded-full border-2 border-white shadow-lg" style="width:${size}px;height:${size}px;background:${color};">
         <div class="h-2.5 w-2.5 rounded-full bg-white"></div>
       </div>
     `,
@@ -81,9 +76,9 @@ function createPopupHtml(item) {
     : ''
 
   return `
-    <div class="min-w-[220px] max-w-[260px] rounded-2xl bg-white p-2 text-slate-900 shadow-lg border border-slate-100">
+    <div class="min-w-[220px] max-w-[260px] rounded-2xl bg-white p-2 text-slate-800 shadow-xl">
       <div class="font-semibold text-sm">${item.title || '장소 이름'}</div>
-      <div class="mt-1 text-xs leading-5 text-slate-500">${item.addr1 || '주소 정보 없음'}</div>
+      <div class="mt-1 text-xs leading-5 text-slate-600">${item.addr1 || '주소 정보 없음'}</div>
       ${imageHtml}
     </div>
   `
@@ -155,7 +150,7 @@ function renderBaseFestivalMarker() {
 
   const festivalIcon = L.divIcon({
     html: `
-      <div class="flex items-center justify-center rounded-full border-4 border-white shadow-xl" style="width:38px;height:38px;background:#ef4444;">
+      <div class="flex items-center justify-center rounded-full border-4 border-white shadow-2xl" style="width:38px;height:38px;background:#ef4444;">
         <div class="h-3.5 w-3.5 rounded-full bg-white"></div>
       </div>
     `,
@@ -166,9 +161,9 @@ function renderBaseFestivalMarker() {
   })
 
   const marker = L.marker([lat, lng], { icon: festivalIcon }).bindPopup(
-    `<div class="min-w-[220px] rounded-2xl bg-white p-2 text-slate-900 shadow-lg border border-slate-100">
+    `<div class="min-w-[220px] rounded-2xl bg-white p-2 text-slate-800 shadow-xl">
       <div class="font-semibold text-sm">${selectedFestival.value.title || '축제 이름'}</div>
-      <div class="mt-1 text-xs text-slate-500">${selectedFestival.value.addr1 || '주소 정보 없음'}</div>
+      <div class="mt-1 text-xs text-slate-600">${selectedFestival.value.addr1 || '주소 정보 없음'}</div>
     </div>`
   )
 
@@ -176,6 +171,7 @@ function renderBaseFestivalMarker() {
 }
 
 function initializeMap() {
+  // 항상 mapContainer가 생성되어 있으므로 정상 작동합니다.
   if (!mapContainer.value) return
 
   if (map.value) {
@@ -198,6 +194,7 @@ function initializeMap() {
     return
   }
 
+  // 지도 생성
   map.value = L.map(mapContainer.value, {
     zoomControl: true,
     scrollWheelZoom: true
@@ -213,6 +210,7 @@ function initializeMap() {
   renderBaseFestivalMarker()
   renderNearbyMarkers()
 
+  // 모든 맵 세팅이 끝난 후 로딩을 종료합니다.
   loading.value = false
 
   nextTick(() => {
@@ -225,6 +223,7 @@ watch(filter, () => {
 })
 
 watch(
+  // 대소문자가 섞인 유동적인 키 처리를 보장
   () => props.selectedContentId,
   () => {
     initializeMap()
@@ -252,18 +251,18 @@ function filterButtonClass(value) {
   return [
     'rounded-full border px-3 py-2 text-sm font-semibold transition',
     filter.value === value
-      ? 'border-cyan-500 bg-cyan-50 text-cyan-700 shadow-sm'
-      : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+      ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20'
+      : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:border-slate-500 hover:text-white'
   ].join(' ')
 }
 </script>
 
 <template>
-  <div class="w-full rounded-3xl border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/50 backdrop-blur">
+  <div class="w-full rounded-3xl border border-slate-700/70 bg-slate-900/80 p-4 shadow-2xl shadow-black/30 backdrop-blur">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 class="text-xl font-semibold text-slate-900">주변 탐색 지도</h2>
-        <p class="text-sm text-slate-500">
+        <h2 class="text-xl font-semibold text-white">주변 탐색 지도</h2>
+        <p class="text-sm text-slate-400">
           기준 축제 위치에서 반경 5km 이내의 관광지와 숙소를 확인해보세요.
         </p>
       </div>
@@ -281,13 +280,16 @@ function filterButtonClass(value) {
       </div>
     </div>
 
-    <div class="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+    <!-- 💡 수정된 핵심 영역: 지도는 항상 켜두고 그 위에 로딩 레이어를 올립니다. -->
+    <div class="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/60">
       
+      <!-- 실제 지도 박스 (항상 렌더링 상태 유지) -->
       <div ref="mapContainer" class="h-full w-full" />
 
+      <!-- 로딩 오버레이 (loading이 true일 때만 지도 위를 완전히 덮음) -->
       <div
         v-if="loading"
-        class="absolute inset-0 z-[5000] flex items-center justify-center bg-white/90 text-slate-600"
+        class="absolute inset-0 z-[5000] flex items-center justify-center bg-slate-950/90 text-slate-300"
       >
         <div class="flex flex-col items-center gap-2">
           <span class="animate-pulse text-lg font-medium">지도를 불러오는 중입니다...</span>
