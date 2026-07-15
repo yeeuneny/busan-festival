@@ -29,21 +29,35 @@ const reviewForm = ref({
   password: ''
 })
 
+// 시연용 고정 리뷰 사용 여부입니다.
+// 배포할 때 false로 바꾸면 미리 등록한 리뷰는 자동으로 제거되고, 사용자 리뷰만 유지됩니다.
+const ENABLE_DEMO_REVIEWS = true
+
 function getSeedReviewsForFestival(festival) {
   const title = festival?.title ?? ''
   const lowerTitle = title.toLowerCase()
 
-  if (/(불교|박람회)/.test(lowerTitle)) {
+  if (/(불교)/.test(lowerTitle)) {
     return [
       {
         nickname: '명상여행자',
         rating: 5,
         content: '전시와 체험이 잘 연결돼 있어서 마음을 편하게 정리할 수 있었어요. 부산에서 여유롭게 보내기 좋았습니다.'
+      }
+    ]
+  }
+
+  if (/(전통시장)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '시장탐방러',
+        rating: 5,
+        content: '다양한 먹거리와 체험이 있어서 가족과 함께 즐기기 좋았어요. 부산의 전통을 느낄 수 있는 좋은 기회였습니다.'
       },
       {
         nickname: '부산동행',
         rating: 4,
-        content: '도심에서 보기 좋은 문화 행사라서 가족과 함께 방문하기도 좋고, 분위기가 차분해서 만족스러웠어요.'
+        content: '친구랑 맛있는 음식도 먹고, 다양한 체험도 즐길 수 있어서 하루 종일 즐겁게 보냈습니다.'
       }
     ]
   }
@@ -63,7 +77,7 @@ function getSeedReviewsForFestival(festival) {
     ]
   }
 
-  if (/(영화|시네마|콘서트|공연)/.test(lowerTitle)) {
+  if (/(영화|시네마)/.test(lowerTitle)) {
     return [
       {
         nickname: '영화덕후',
@@ -78,7 +92,7 @@ function getSeedReviewsForFestival(festival) {
     ]
   }
 
-  if (/(록|페스티벌|축제)/.test(lowerTitle)) {
+  if (/(록|뮤직)/.test(lowerTitle)) {
     return [
       {
         nickname: '록팬',
@@ -123,7 +137,7 @@ function getSeedReviewsForFestival(festival) {
     ]
   }
 
-  return [
+    return [
     {
       nickname: '부산여행자',
       rating: 5,
@@ -135,35 +149,67 @@ function getSeedReviewsForFestival(festival) {
       content: '여유롭게 둘러보기 좋고, 주변 관광지와 함께 가기에도 편해서 추천하고 싶어요.'
     }
   ]
+
 }
 
 function seedDefaultReviewsForSelectedFestival() {
   if (typeof window === 'undefined' || !selectedFestival.value) return
 
   const key = storageKey.value
+  const demoSource = getSeedReviewsForFestival(selectedFestival.value)
 
   try {
     const raw = window.localStorage.getItem(key)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return
-      }
+    const parsed = raw ? JSON.parse(raw) : []
+    const existingReviews = Array.isArray(parsed) ? parsed : []
+
+    // 이전 코드로 저장된 고정 리뷰도 시연용으로 판별합니다.
+    const isStoredDemoReview = (review) => {
+      const matchesDemoText = demoSource.some(
+        (demo) =>
+          demo.nickname === review.nickname &&
+          demo.content === review.content
+      )
+
+      return (
+        review.isDemo === true ||
+        review.password === 'seed' ||
+        String(review.id ?? '').startsWith('demo-') ||
+        matchesDemoText
+      )
     }
+
+    // 사용자가 직접 등록한 리뷰만 별도로 보존합니다.
+    const userReviews = existingReviews
+      .filter((review) => !isStoredDemoReview(review))
+      .map((review) => ({
+        ...review,
+        isDemo: false
+      }))
+
+    // 배포 모드에서는 시연용 리뷰를 완전히 제거합니다.
+    if (!ENABLE_DEMO_REVIEWS) {
+      reviews.value = userReviews
+      window.localStorage.setItem(key, JSON.stringify(userReviews))
+      return
+    }
+
+    // 모든 미리 등록한 리뷰를 동일한 시연용 구조로 다시 생성합니다.
+    const demoReviews = demoSource.map((review, index) => ({
+      id: `demo-${resolvedFestivalId.value}-${index}`,
+      nickname: review.nickname,
+      content: review.content,
+      rating: Number(review.rating),
+      password: 'seed',
+      isDemo: true
+    }))
+
+    const mergedReviews = [...demoReviews, ...userReviews]
+
+    reviews.value = mergedReviews
+    window.localStorage.setItem(key, JSON.stringify(mergedReviews))
   } catch {
-    // 기존 리뷰가 없거나 파싱 실패 시 기본 후기로 채워 넣음
-  }
-
-  const seededReviews = getSeedReviewsForFestival(selectedFestival.value).map((review, index) => ({
-    id: Date.now() + index,
-    nickname: review.nickname,
-    content: review.content,
-    rating: review.rating,
-    password: 'seed'
-  }))
-
-  if (seededReviews.length > 0) {
-    window.localStorage.setItem(key, JSON.stringify(seededReviews))
+    reviews.value = []
   }
 }
 
@@ -272,7 +318,7 @@ function saveLikesMeta() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(likesStorageKey, JSON.stringify(likesMeta.value))
   // 다른 컴포넌트(구별 지도 목록 등)에 실시간으로 좋아요가 바뀌었다고 이벤트를 쏴줍니다.
-  window.dispatchEvent(new Event('likes-meta-updated'))
+  window.dispatchEvent(new Event('festival-reviews-updated'))
 }
 
 // 💡 내가 누른 좋아요 기록 저장하기
@@ -329,7 +375,13 @@ function loadReviews() {
 
 function saveReviews() {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(storageKey.value, JSON.stringify(reviews.value))
+
+  window.localStorage.setItem(
+    storageKey.value,
+    JSON.stringify(reviews.value)
+  )
+
+  window.dispatchEvent(new Event('festival-reviews-updated'))
 }
 
 function resetForm() {
@@ -376,7 +428,8 @@ function submitReview() {
       nickname,
       content,
       rating: Number(reviewForm.value.rating),
-      password
+      password,
+      isDemo: false
     })
   }
 
@@ -533,7 +586,7 @@ onMounted(() => {
         <div class="mb-5">
           <h2 class="text-2xl font-semibold text-white">방문자 한 줄 리뷰</h2>
           <p class="mt-1 text-sm text-slate-400">
-            실제 여행자 느낌의 후기를 미리 보여드리고 있어요. 직접 남긴 리뷰와 함께 참고해보세요.
+            시연용 리뷰와 방문자가 직접 작성한 리뷰를 함께 확인할 수 있어요.
           </p>
         </div>
 
@@ -622,7 +675,15 @@ onMounted(() => {
           >
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p class="font-semibold text-white">{{ review.nickname }}</p>
+                <div class="flex items-center gap-2">
+                  <p class="font-semibold text-white">{{ review.nickname }}</p>
+                  <span
+                    v-if="review.isDemo"
+                    class="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-xs font-medium text-cyan-300"
+                  >
+                    시연용
+                  </span>
+                </div>
                 <p class="text-sm text-slate-400">
                   {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
                 </p>

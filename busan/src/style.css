@@ -20,12 +20,14 @@ body {
 
 #app {
   min-height: 100vh;
-} 
-  {
-    height: 22px;
-  }
-{
-  @media (max-width: 1024px) {
+}
+
+.header {
+  height: 22px;
+}
+
+@media (max-width: 1024px) {
+  .container {
     flex-direction: column;
     text-align: center;
   }

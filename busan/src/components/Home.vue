@@ -178,35 +178,7 @@ onMounted(() => {
               지도를 살펴보며 여행 계획을 짜고, 마음에 드는 축제를 바로 탐색해보세요.
             </p>
           </div>
-          <div class="intro-actions">
-            <span class="chip">추천 여행지</span>
-            <span class="chip">축제 탐색</span>
-            <span class="chip">부산 감성</span>
-          </div>
         </section>
-
-        <section class="feature-strip" aria-label="추천 관광지 및 축제">
-          <article
-            v-for="item in featuredItems"
-            :key="`${item.type}-${item.title}`"
-            class="feature-card"
-            @click="handleFeaturedCardClick(item)"
-          >
-            <div v-if="item.image" class="feature-image">
-              <img :src="item.image" :alt="item.title" loading="lazy" />
-            </div>
-            <div v-else class="feature-image feature-image-placeholder">
-              <i class="fa-regular fa-image"></i>
-            </div>
-
-            <div class="feature-body">
-              <span class="feature-tag">{{ item.type }}</span>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.description }}</p>
-            </div>
-          </article>
-        </section>
-
         <section id="map-container" aria-label="부산 지도">
           <div id="map-coordinate-wrapper">
             <img :src="busanMapImage" alt="부산 16개 구·군 지도" />
@@ -232,7 +204,7 @@ onMounted(() => {
 
         <div class="tip-row">
           <i class="fa-solid fa-location-dot"></i>
-          <small>TIP. 마우스를 올리면 지역명을 확인할 수 있어요</small>
+          <small>💡 TIP. 마우스를 올리면 지역명을 확인할 수 있어요</small>
         </div>
       </aside>
 
