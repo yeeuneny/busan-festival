@@ -36,7 +36,7 @@ function goToCalendar() {
         <div class="flex items-center gap-2 cursor-pointer transition active:scale-95" @click="goToHome">
           <span class="text-2xl">🌊</span>
           <span class="text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            BUSAN FESTIVAL
+            BUSAN FESTIVAL MAP
           </span>
         </div>
 
@@ -49,7 +49,7 @@ function goToCalendar() {
               ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
               : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
-            🗺️ 지도 탐색
+            🗺️ 축제 탐색
           </button>
 
           <button
@@ -71,7 +71,7 @@ function goToCalendar() {
               ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
               : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
-            💬 전체 후기
+            💬 커뮤니티
           </button>
         </nav>
 

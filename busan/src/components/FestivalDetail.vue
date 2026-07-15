@@ -19,6 +19,7 @@ const reviews = ref([])
 const editingId = ref(null)
 const errorText = ref('')
 const likesMeta = ref({})
+// 💡 내가 어떤 축제들에 좋아요를 눌렀는지 ID를 저장할 배열 변수
 const myLikes = ref([])
 
 const reviewForm = ref({
@@ -28,59 +29,199 @@ const reviewForm = ref({
   password: ''
 })
 
+function getSeedReviewsForFestival(festival) {
+  const title = festival?.title ?? ''
+  const lowerTitle = title.toLowerCase()
+
+  if (/(불교|박람회)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '명상여행자',
+        rating: 5,
+        content: '전시와 체험이 잘 연결돼 있어서 마음을 편하게 정리할 수 있었어요. 부산에서 여유롭게 보내기 좋았습니다.'
+      },
+      {
+        nickname: '부산동행',
+        rating: 4,
+        content: '도심에서 보기 좋은 문화 행사라서 가족과 함께 방문하기도 좋고, 분위기가 차분해서 만족스러웠어요.'
+      }
+    ]
+  }
+
+  if (/(나이트|레이스|광안)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '야경좋아',
+        rating: 5,
+        content: '야간 분위기가 정말 화려하고, 바다 위로 펼쳐진 조명이 인상적이었어요.'
+      },
+      {
+        nickname: '광안리방문',
+        rating: 4,
+        content: '저녁에 가서 바다와 함께 즐기기 좋았고, 주변 식당도 많아서 편리했습니다.'
+      }
+    ]
+  }
+
+  if (/(영화|시네마|콘서트|공연)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '영화덕후',
+        rating: 5,
+        content: '현장감이 살아 있어서 공연이나 전시를 직접 보는 느낌이 정말 좋았어요.'
+      },
+      {
+        nickname: '부산감성',
+        rating: 4,
+        content: '축제의 분위기가 살아 있고, 오랜만에 부산의 에너지를 느낄 수 있어서 만족스러웠습니다.'
+      }
+    ]
+  }
+
+  if (/(록|페스티벌|축제)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '록팬',
+        rating: 5,
+        content: '현장 분위기가 정말 뜨겁고, 무대와 관객의 에너지가 좋아서 재방문하고 싶어요.'
+      },
+      {
+        nickname: '뮤직트래블',
+        rating: 4,
+        content: '부대 프로그램도 다양해서 하루 종일 즐기기 좋았습니다.'
+      }
+    ]
+  }
+
+  if (/(어린이|책|키즈|체험)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '가족여행',
+        rating: 5,
+        content: '아이들과 함께 가기 정말 좋았고, 체험 부스도 다양해서 즐거운 시간이었어요.'
+      },
+      {
+        nickname: '책읽는가족',
+        rating: 4,
+        content: '어린이와 부모 모두 즐길 수 있는 구성이라 부담 없이 방문하기 좋았습니다.'
+      }
+    ]
+  }
+
+  if (/(빛|트리|조명|야경)/.test(lowerTitle)) {
+    return [
+      {
+        nickname: '빛축제러버',
+        rating: 5,
+        content: '밤에 가면 조명이 정말 아름다워서 산책하면서 보기 좋은 축제였어요.'
+      },
+      {
+        nickname: '사진여행자',
+        rating: 4,
+        content: '포토존과 조명이 예뻐서 여행 사진 남기기 딱 좋았습니다.'
+      }
+    ]
+  }
+
+  return [
+    {
+      nickname: '부산여행자',
+      rating: 5,
+      content: '축제 분위기가 살아 있고, 부산의 감성을 충분히 느낄 수 있어서 만족스러웠어요.'
+    },
+    {
+      nickname: '한줄후기',
+      rating: 4,
+      content: '여유롭게 둘러보기 좋고, 주변 관광지와 함께 가기에도 편해서 추천하고 싶어요.'
+    }
+  ]
+}
+
+function seedDefaultReviewsForSelectedFestival() {
+  if (typeof window === 'undefined' || !selectedFestival.value) return
+
+  const key = storageKey.value
+
+  try {
+    const raw = window.localStorage.getItem(key)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return
+      }
+    }
+  } catch {
+    // 기존 리뷰가 없거나 파싱 실패 시 기본 후기로 채워 넣음
+  }
+
+  const seededReviews = getSeedReviewsForFestival(selectedFestival.value).map((review, index) => ({
+    id: Date.now() + index,
+    nickname: review.nickname,
+    content: review.content,
+    rating: review.rating,
+    password: 'seed'
+  }))
+
+  if (seededReviews.length > 0) {
+    window.localStorage.setItem(key, JSON.stringify(seededReviews))
+  }
+}
+
 const resolvedFestivalId = computed(() => {
   const rawValue = props.festivalId ?? props.contentid ?? ''
   return String(rawValue).trim() || '506545'
 })
 
+const feeInfo = computed(() => {
+  const rawValue = selectedFestival.value?.usetimefestival
+  const text = String(rawValue ?? '').trim().replace(/<br>/g, ' ')
+  const normalized = text.replace(/\s+/g, ' ').trim()
+
+  if (!normalized || normalized === 'null') {
+    return {
+      label: '정보 없음',
+      description: '요금 정보가 등록되지 않았어요.'
+    }
+  }
+
+  const lowerText = normalized.toLowerCase()
+
+  if (lowerText.includes('유료') && lowerText.includes('무료')) {
+    return {
+      label: '부분 유료',
+      description: normalized
+    }
+  }
+
+  if (lowerText.includes('유료') || /원/.test(lowerText) || /가격/.test(lowerText)) {
+    return {
+      label: '유료',
+      description: normalized
+    }
+  }
+
+  if (lowerText.includes('무료')) {
+    return {
+      label: '무료',
+      description: normalized
+    }
+  }
+
+  return {
+    label: '상세 확인',
+    description: normalized
+  }
+})
+
 const storageKey = computed(() => `festival-reviews-${resolvedFestivalId.value}`)
 const likesStorageKey = 'busan-festival-likes-meta-v2'
-const myLikesStorageKey = 'busan-festival-user-liked' 
+const myLikesStorageKey = 'busan-festival-user-liked' // 💡 유저 개인의 좋아요 기록 키
 
+// 💡 현재 보고 있는 축제에 내가 좋아요를 눌렀는지 확인하는 컴퓨터 변수
 const isCurrentFestivalLiked = computed(() => {
   if (!selectedFestival.value) return false
   return myLikes.value.includes(String(selectedFestival.value.contentid))
 })
-
-const dDayText = computed(() => {
-  if (!selectedFestival.value || !selectedFestival.value.eventstartdate) return ''
-
-  const startStr = selectedFestival.value.eventstartdate 
-  const endStr = selectedFestival.value.eventenddate     
-
-  const sYear = parseInt(startStr.substring(0, 4))
-  const sMonth = parseInt(startStr.substring(4, 6)) - 1
-  const sDay = parseInt(startStr.substring(6, 8))
-
-  const eYear = parseInt(endStr.substring(0, 4))
-  const eMonth = parseInt(endStr.substring(4, 6)) - 1
-  const eDay = parseInt(endStr.substring(6, 8))
-
-  const startDate = new Date(sYear, sMonth, sDay)
-  const endDate = new Date(eYear, eMonth, eDay, 23, 59, 59)
-  const today = new Date()
-
-  const todayPure = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const startPure = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
-
-  const diffMs = startPure.getTime() - todayPure.getTime()
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  if (today > endDate) {
-    return '종료된 축제'
-  } else if (today >= startDate && today <= endDate) {
-    return '🥳 진행 중!'
-  } else if (diffDays === 0) {
-    return '🔥 오늘 시작!'
-  } else {
-    return `D-${diffDays}`
-  }
-})
-
-function formatDate(dateStr) {
-  if (!dateStr) return '정보 없음'
-  return `${dateStr.substring(0, 4)}년 ${dateStr.substring(4, 6)}월 ${dateStr.substring(6, 8)}일`
-}
 
 function getFestivalById() {
   const items = festivalsData?.items ?? []
@@ -101,6 +242,7 @@ function loadLikesMeta() {
     if (raw) {
       likesMeta.value = JSON.parse(raw)
     } else {
+      // 💡 요구사항 반영: 가짜 데이터 제거하고 처음엔 무조건 하트가 0개로 시작하도록 초기화
       const fallback = {}
       const items = festivalsData?.items ?? []
       items.forEach((item) => {
@@ -115,6 +257,7 @@ function loadLikesMeta() {
   }
 }
 
+// 💡 내가 과거에 눌렀던 좋아요 목록 불러오기
 function loadMyLikes() {
   if (typeof window === 'undefined') return
   try {
@@ -128,9 +271,11 @@ function loadMyLikes() {
 function saveLikesMeta() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(likesStorageKey, JSON.stringify(likesMeta.value))
+  // 다른 컴포넌트(구별 지도 목록 등)에 실시간으로 좋아요가 바뀌었다고 이벤트를 쏴줍니다.
   window.dispatchEvent(new Event('likes-meta-updated'))
 }
 
+// 💡 내가 누른 좋아요 기록 저장하기
 function saveMyLikes() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(myLikesStorageKey, JSON.stringify(myLikes.value))
@@ -142,6 +287,7 @@ function getLikeCount(contentid) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+// 💡 1인 1하트 제한 토글 함수로 전면 수정
 function toggleLike() {
   if (!selectedFestival.value) return
 
@@ -149,16 +295,20 @@ function toggleLike() {
   const currentCount = getLikeCount(id)
 
   if (isCurrentFestivalLiked.value) {
+    // 이미 하트를 누른 축제라면 ➡️ 취소 요청 (-1)
     likesMeta.value = {
       ...likesMeta.value,
       [id]: Math.max(0, currentCount - 1)
     }
+    // 내 하트 기록 배열에서 삭제
     myLikes.value = myLikes.value.filter((item) => item !== id)
   } else {
+    // 처음 누르는 축제라면 ➡️ 하트 추가 (+1)
     likesMeta.value = {
       ...likesMeta.value,
       [id]: currentCount + 1
     }
+    // 내 하트 기록 배열에 추가
     myLikes.value.push(id)
   }
 
@@ -272,6 +422,7 @@ watch(
   resolvedFestivalId,
   () => {
     getFestivalById()
+    seedDefaultReviewsForSelectedFestival()
     loadReviews()
     resetForm()
   },
@@ -280,8 +431,9 @@ watch(
 
 onMounted(() => {
   getFestivalById()
+  seedDefaultReviewsForSelectedFestival()
   loadLikesMeta()
-  loadMyLikes()
+  loadMyLikes() // 💡 유저 하트 기록 가져오기 추가
   loadReviews()
 })
 </script>
@@ -293,104 +445,86 @@ onMounted(() => {
         v-if="selectedFestival"
         class="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-900/90 shadow-2xl shadow-black/30"
       >
-        <div class="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
-          
-          <!-- 🌟 [개선 핵심] 상단 와이드 타이틀 헤더 바 (col-span-full로 2열 전체를 덮어 씌움) -->
-          <div class="col-span-full border-b border-slate-800 pb-5">
-            <div class="mb-3 inline-flex w-fit rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+        <div class="grid gap-8 p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
+          <div class="flex items-center justify-center">
+            <img
+              v-if="selectedFestival.firstimage"
+              :src="selectedFestival.firstimage"
+              :alt="selectedFestival.title"
+              class="h-[340px] w-full rounded-[24px] border border-slate-700 object-cover shadow-lg"
+            />
+            <div
+              v-else
+              class="flex h-[340px] w-full items-center justify-center rounded-[24px] border border-dashed border-slate-700 bg-slate-800/60 text-slate-400"
+            >
+              이미지가 없습니다
+            </div>
+          </div>
+
+          <div class="flex flex-col justify-center">
+            <div class="mb-4 inline-flex w-fit rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-sm font-semibold text-cyan-300">
               부산 축제 상세 소개
             </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div class="flex flex-wrap items-center gap-3">
-                <h1 class="text-2xl font-black leading-tight sm:text-3xl text-white">
-                  {{ selectedFestival.title }}
-                </h1>
-                
-                <!-- 남은 일수 디데이 배지 -->
-                <span 
-                  v-if="dDayText"
-                  class="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-black text-slate-950 shadow-md shadow-orange-500/10"
-                >
-                  {{ dDayText }}
-                </span>
-              </div>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <h1 class="text-3xl font-bold leading-tight sm:text-4xl">
+                {{ selectedFestival.title }}
+              </h1>
 
-              <!-- 좋아요 버튼 -->
+              <!-- 💡 내가 누른 상태에 따라 하트 버튼 디자인이 연동되도록 반응형 클래스 지정 -->
               <button
                 type="button"
-                class="rounded-full border px-4 py-2 text-sm font-bold transition shadow-md self-start sm:self-auto shrink-0"
-                :class="isCurrentFestivalLiked
-                  ? 'border-rose-500 bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600'
+                class="rounded-full border px-4 py-2 text-sm font-bold transition shadow-md"
+                :class="isCurrentFestivalLiked 
+                  ? 'border-rose-500 bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600' 
                   : 'border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20'"
                 @click="toggleLike"
               >
                 ❤️ {{ getLikeCount(selectedFestival.contentid) }}
               </button>
             </div>
-          </div>
-          
-          <!-- 📸 좌측 컬럼: 축제 포스터 영역 (제목 아래로 안전하게 정렬됨) -->
-          <div class="flex items-center justify-center bg-slate-950/40 rounded-[24px] border border-slate-800 p-2 overflow-hidden shadow-inner h-[396px]">
-            <div class="w-full h-full overflow-hidden flex items-center justify-center rounded-xl relative select-none">
-              <img
-                v-if="selectedFestival.firstimage"
-                :src="selectedFestival.firstimage"
-                :alt="selectedFestival.title"
-                class="h-[380px] w-full object-contain rounded-xl shadow-md"
-              />
-              <div
-                v-else
-                class="flex h-[380px] w-full items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-800/60 text-slate-400"
-              >
-                이미지가 없습니다
-              </div>
-            </div>
-          </div>
 
-          <!-- 📑 우측 컬럼: 상세 메타데이터 출력 스크롤 플레이트 (사진과 균형을 이루도록 max-h 커스텀) -->
-          <div class="flex flex-col justify-start">
-            <div class="space-y-3.5 text-sm text-slate-300 sm:text-base max-h-[396px] overflow-y-auto pr-2 scrollbar-thin">
-              
-              <!-- 1. 축제 시작일과 종료일 -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">🗓️ 축제 기간</p>
-                <p class="mt-1.5 font-semibold text-cyan-300">
-                  {{ formatDate(selectedFestival.eventstartdate) }} ~ {{ formatDate(selectedFestival.eventenddate) }}
+            <div class="mt-5 space-y-3 text-sm text-slate-300 sm:text-base">
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-4">
+                <p class="text-slate-400">주소</p>
+                <p class="mt-1 font-medium text-white">{{ selectedFestival.addr1 || '주소 정보 없음' }}</p>
+              </div>
+
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-4">
+                <p class="text-slate-400">전화번호</p>
+                <p class="mt-1 font-medium text-white">{{ selectedFestival.tel || '전화번호 정보 없음' }}</p>
+              </div>
+
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-4">
+                <p class="text-slate-400">요금</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  <span
+                    class="rounded-full border px-3 py-1 text-sm font-semibold"
+                    :class="feeInfo.label === '무료'
+                      ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300'
+                      : feeInfo.label === '유료' || feeInfo.label === '부분 유료'
+                        ? 'border-amber-400/40 bg-amber-500/10 text-amber-300'
+                        : 'border-slate-600 bg-slate-700/60 text-slate-300'"
+                  >
+                    {{ feeInfo.label }}
+                  </span>
+                  <p class="text-sm leading-6 text-slate-300">{{ feeInfo.description }}</p>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-4">
+                <p class="text-slate-400">축제 소개</p>
+                <p class="mt-1 leading-7 text-slate-300">
+                  {{ selectedFestival.program
+                    ? selectedFestival.program.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+                    : '이 축제에 대한 구체적인 소개 정보가 아직 제공되지 않았습니다.' }}
                 </p>
               </div>
-
-              <!-- 2. 축제 장소 -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">📍 축제 장소 (eventplace)</p>
-                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.eventplace || '장소 정보 없음' }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ selectedFestival.addr1 }}</p>
-              </div>
-
-              <!-- 3. playtime -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">⏰ 운영 시간 (playtime)</p>
-                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.playtime || '시간 정보 없음' }}</p>
-              </div>
-
-              <!-- 4. usetimefestival -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">💰 이용 요금 (usetimefestival)</p>
-                <p class="mt-1.5 font-medium text-white" v-html="selectedFestival.usetimefestival || '정보 없음'"></p>
-              </div>
-
-              <!-- 5. program -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">📑 주요 프로그램 (program)</p>
-                <p class="mt-1.5 leading-relaxed text-slate-300 whitespace-pre-wrap text-sm">{{ selectedFestival.program || '프로그램 내용이 없습니다.' }}</p>
-              </div>
-
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 지도 및 하단 한 줄 리뷰 섹션 데이터 유지 -->
       <section class="rounded-[28px] border border-slate-800 bg-slate-900/90 p-4 shadow-2xl shadow-black/30 sm:p-6">
         <FestivalDetailMap :selectedContentId="resolvedFestivalId" />
       </section>
@@ -399,7 +533,7 @@ onMounted(() => {
         <div class="mb-5">
           <h2 class="text-2xl font-semibold text-white">방문자 한 줄 리뷰</h2>
           <p class="mt-1 text-sm text-slate-400">
-            이 축제에 대한 솔직한 후기를 남겨주세요. 수정과 삭제는 비밀번호가 맞아야 가능합니다.
+            실제 여행자 느낌의 후기를 미리 보여드리고 있어요. 직접 남긴 리뷰와 함께 참고해보세요.
           </p>
         </div>
 
@@ -527,28 +661,20 @@ onMounted(() => {
 :deep(.leaflet-container) {
   font: inherit;
 }
+
 :deep(.leaflet-popup-content-wrapper) {
   padding: 0;
   border-radius: 16px;
   overflow: hidden;
 }
+
 :deep(.leaflet-popup-content) {
   margin: 0;
 }
+
 :deep(.custom-pin),
 :deep(.festival-pin) {
   background: transparent;
   border: none;
-}
-
-.scrollbar-thin::-webkit-scrollbar {
-  width: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
 }
 </style>
