@@ -4,208 +4,481 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>부산 축제 탐색</title>
+
+  <!-- Pretendard (전체 폰트) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css">
+
+  <!-- Font Awesome (아이콘) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Tailwind (유틸류는 선택적으로 사용) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body {
-      min-height: 100vh;
-      margin: 0;
-      background: #1AB3FF;
+    /* =========================
+       폰트 및 공통 스타일
+       ========================= */
+    :root {
+      --panel-radius: 14px;
+      --muted: #F8FAFC;
+      --panel-border: #E6E9EE;
+      --title-color: #0f1724;
+      --text-muted: #64748b;
+      --accent: #0ea5e9;
     }
 
+    html, body {
+      height: 100%;
+      font-family: Pretendard, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--muted);
+      margin: 0;
+      color: var(--title-color);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .app-layout {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =========================
+       좌측 지도 영역
+       ========================= */
+    .split {
+      display: flex;
+      gap: 0;
+      width: 100%;
+      flex: 1 1 auto;
+    }
+
+    .map-area {
+      width: 100%;
+      background: #ffffff;
+      padding: 28px;
+      box-sizing: border-box;
+      flex-basis: 62%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .map-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--title-color);
+      line-height: 1.1;
+    }
+
+    .map-header p {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .hint-box {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--panel-border);
+      padding: 8px 12px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* map container (지도 이미지와 마커 레이어) */
     #map-container {
-        position: relative;
+      position: relative;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      box-sizing: border-box;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      overflow: hidden;
     }
 
     #map-container img {
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-        display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      max-width: 960px;
     }
 
     #marker-layer {
-        position: absolute;
-        inset: 0;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
     }
 
+    /* =========================
+       지도 마커
+       ========================= */
     .region-marker {
-        position: absolute;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 9999px;
-        border: 2px solid #ffffff;
-        background: rgba(255, 255, 255, 0.75);
-        transform: translate(-50%, -50%);
-        transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-        cursor: pointer;
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      outline: none;
+      pointer-events: auto;
     }
 
-    .region-marker:hover,
-    .region-marker.selected {
-        transform: translate(-50%, -50%) scale(1.8);
-        background: rgba(56, 189, 248, 0.85);
-        box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.25);
+    .region-marker::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1.5px solid rgba(6, 21, 40, 0.08);
+      box-shadow: 0 6px 14px rgba(2,6,23,0.10);
+      transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
     }
 
-    .region-marker.selected {
-        background: rgba(14, 165, 233, 0.95);
+    .region-marker:hover::before {
+      transform: translate(-50%, -50%) scale(1.35);
+      background: rgba(14,165,233,0.95);
+      box-shadow: 0 0 0 8px rgba(14,165,233,0.14), 0 8px 18px rgba(2,6,23,0.14);
+    }
+
+    .region-marker.selected::before {
+      transform: translate(-50%, -50%) scale(1.45);
+      background: rgba(3,105,161,0.95);
+      box-shadow: 0 0 0 8px rgba(3,105,161,0.18), 0 10px 22px rgba(2,6,23,0.16);
     }
 
     .region-marker::after {
-        content: attr(data-region);
-        position: absolute;
-        left: 50%;
-        top: -0.75rem;
-        transform: translate(-50%, -100%) scale(0);
-        transform-origin: bottom center;
-        padding: 0.25rem 0.55rem;
-        border-radius: 9999px;
-        background: rgba(15, 23, 42, 0.92);
-        color: #ffffff;
-        font-size: 0.72rem;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.15s ease, transform 0.15s ease;
-        z-index: 2;
+      content: attr(data-region);
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      transform: translate(-50%, -100%) scale(0);
+      transform-origin: bottom center;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(2,6,23,0.88);
+      color: #fff;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+      z-index: 20;
     }
 
-    .region-marker:hover::after {
-        transform: translate(-50%, -100%) scale(1);
-        opacity: 1;
+    .region-marker:hover::after,
+    .region-marker.selected::after {
+      transform: translate(-50%, -100%) scale(1);
+      opacity: 1;
     }
 
-    .coord-dot {
-        position: absolute;
-        width: 1rem;
-        height: 1rem;
-        border: 3px solid #38bdf8;
-        border-radius: 9999px;
-        background: rgba(56, 189, 248, 0.35);
-        transform: translate(-50%, -50%);
-        z-index: 15;
-        pointer-events: none;
+    /* =========================
+       우측 축제 정보 패널
+       ========================= */
+    .panel-area {
+      width: 100%;
+      flex-basis: 38%;
+      flex-shrink: 0;
+      background: transparent;
+      border-left: 1px solid rgba(15,23,42,0.06);
+      box-shadow: -8px 0 24px rgba(2,6,23,0.04);
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
 
-    #coord-panel.hidden {
-        display: none;
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(15,23,42,0.04);
+      position: sticky;
+      top: 0;
+      background: transparent;
+      z-index: 5;
     }
 
+    .panel-body {
+      margin-top: 12px;
+      overflow: auto;
+      padding-right: 6px;
+      height: calc(100vh - 140px);
+    }
+
+    .empty-card {
+      width: 100%;
+      height: 100%;
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(2,6,23,0.04);
+      padding: 22px;
+      box-sizing: border-box;
+    }
+
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#ffffff;
+      border:1px solid rgba(15,23,42,0.06);
+      font-weight:700;
+      font-size:13px;
+      color:var(--title-color);
+    }
+
+    /* responsive */
+    @media (max-width: 1023px) {
+      .split { flex-direction: column; }
+      .map-area, .panel-area { flex-basis: auto; width: 100%; padding: 16px; }
+      .panel-body { height: auto; overflow: visible; }
+      #map-container { padding: 12px; border-radius: 10px; }
+    }
   </style>
 </head>
-<body class="text-slate-900">
-  <main class="mx-auto max-w-6xl px-4 py-10">
-    <section class="mb-8">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900">부산 축제 탐색</h1>
-                <p class="mt-2 text-slate-700">PNG 지도 위에 16개 구·군 마커를 배치합니다.</p>
+<body>
+  <div class="app-layout">
+    <div class="split">
+      <!-- 좌측 지도 영역 -->
+      <aside class="map-area">
+        <div class="map-header">
+          <h1>부산 축제 지도</h1>
+          <p>지도를 클릭하면 지역별 축제 정보를 확인할 수 있어요</p>
+        </div>
+
+        <div class="hint-box" aria-hidden="true">
+          <i class="fa-solid fa-circle-info" style="color:#0F1724;"></i>
+          <span>원하는 지역을 클릭해보세요</span>
+        </div>
+
+        <!-- 지도 컨테이너 (기존 구조 유지) -->
+        <section id="map-container" aria-label="부산 지도">
+          <img src="busan-map.png" alt="부산 16개 구·군 지도" />
+          <div id="marker-layer" aria-hidden="false"></div>
+        </section>
+
+        <div style="display:flex; gap:8px; align-items:center; color:var(--text-muted); font-size:13px; margin-top:8px;">
+          <i class="fa-solid fa-location-dot" style="color:var(--text-muted); font-size:12px;"></i>
+          <small>TIP. 마우스를 올리면 지역명을 확인할 수 있어요</small>
+        </div>
+      </aside>
+
+      <!-- 우측 축제 정보 패널 -->
+      <aside class="panel-area" role="region" aria-label="축제 정보 패널">
+        <div class="panel-header">
+          <div style="display:flex; flex-direction:column;">
+            <strong style="font-size:16px;">축제 정보</strong>
+            <span style="font-size:12px; color:var(--text-muted);">선택된 지역의 축제 정보를 확인하세요</span>
+          </div>
+          <div class="badge">전체 축제</div>
+        </div>
+
+        <div id="panel-body" class="panel-body">
+          <!-- 초기 빈 상태 -->
+          <div id="empty-state" class="empty-card" aria-live="polite">
+            <div style="text-align:center;">
+              <div style="font-size:28px; color:var(--text-muted); margin-bottom:8px;">
+                <i class="fa-regular fa-calendar"></i>
+              </div>
+              <h3 style="margin:0 0 8px; color:var(--title-color);">지역을 선택해주세요</h3>
+              <p style="margin:0; color:var(--text-muted);">지도를 클릭하면 해당 지역의 축제 목록이 표시됩니다.</p>
             </div>
+          </div>
+
+          <!-- 선택된 지역 제목 영역 (hidden initially) -->
+          <div id="region-selected" style="display:none; margin-top:6px;">
+            <div style="padding:12px 0; border-bottom:1px solid rgba(15,23,42,0.04);">
+              <h4 id="region-title" style="margin:0; font-size:18px; color:var(--title-color);"></h4>
+              <p id="region-sub" style="margin:4px 0 0; color:var(--text-muted); font-size:13px;">선택한 지역의 축제 정보를 확인하세요</p>
+            </div>
+
+            <!-- 빈 상태 영역 (데이터 연결 전용 자리) -->
+            <div id="region-list" style="margin-top:12px;">
+              <!-- 축제 카드가 들어올 영역 (현재 빈 상태) -->
+            </div>
+          </div>
         </div>
-    </section>
+      </aside>
+    </div>
+  </div>
 
-    <section id="map-container"
-        class="relative mx-auto max-w-5xl overflow-hidden rounded-[30px] bg-slate-50/70 border border-white/40 shadow-[0_32px_80px_rgba(2,51,103,0.14)]">
-        <img src="busan-map.png" alt="부산 16개 구·군 지도" />
-        <div id="marker-layer" class="absolute inset-0"></div>
-    </section>
-
-    <section id="festival-panel" class="space-y-4 mt-8">
-        <div class="rounded-[2rem] bg-white/95 p-6 shadow-xl">
-            <h2 class="text-2xl font-semibold">선택된 지역 축제</h2>
-            <p id="festival-message" class="mt-3 text-slate-600">
-            구·군을 클릭하면 축제 목록이 표시됩니다.
-            </p>
-        </div>
-    </section>
-  </main>
-
+  <!-- =========================
+       지도 마커와 패널 관리 스크립트
+       (regionCoords는 절대 변경하지 마세요)
+       ========================= -->
   <script>
     const regionCoords = [
         { name: '강서구', left: 22.8, top: 64.9 },
         { name: '금정구', left: 57.6, top: 33.7 },
         { name: '기장군', left: 77.7, top: 25.8 },
         { name: '남구', left: 59.4, top: 65.2 },
-        { name: '동구', left: 50.6, top: 65.4 },
-        { name: '동래구', left: 56.3, top: 45.5 },
+        { name: '동구', left: 50.6, top: 64.4 },
+        { name: '동래구', left: 56.3, top: 44.5 },
         { name: '부산진구', left: 49.9, top: 56.0 },
         { name: '북구', left: 45.8, top: 41.4 },
         { name: '사상구', left: 39.6, top: 57.2 },
         { name: '사하구', left: 38.9, top: 74.8 },
-        { name: '서구', left: 45.0, top: 66.7 },
-        { name: '수영구', left: 62.3, top: 56.1 },
-        { name: '연제구', left: 56.6, top: 50.9 },
+        { name: '서구', left: 44.6, top: 66.7 },
+        { name: '수영구', left: 62, top: 55.1 },
+        { name: '연제구', left: 56.6, top: 49.9 },
         { name: '영도구', left: 53.9, top: 75.6 },
-        { name: '중구', left: 48.2, top: 70.3 },
+        { name: '중구', left: 48.1, top: 69.3 },
         { name: '해운대구', left: 69.2, top: 49.8 }
     ];
 
-    const mapContainer = document.getElementById('map-container');
     const markerLayer = document.getElementById('marker-layer');
-    const mapImage = mapContainer.querySelector('img');
+    const mapContainer = document.getElementById('map-container');
+    const panelBody = document.getElementById('panel-body');
+    const emptyState = document.getElementById('empty-state');
+    const regionSelected = document.getElementById('region-selected');
+    const regionTitle = document.getElementById('region-title');
+    const regionSub = document.getElementById('region-sub');
+    const regionList = document.getElementById('region-list');
 
     let selectedRegion = null;
 
     function createMarker(region) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'region-marker';
-        button.dataset.region = region.name;
-        button.setAttribute('aria-label', `${region.name} 선택`);
-        button.style.left = `${region.left}%`;
-        button.style.top = `${region.top}%`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'region-marker';
+      btn.dataset.region = region.name;
+      btn.setAttribute('aria-label', `${region.name} 선택`);
+      btn.style.left = `${region.left}%`;
+      btn.style.top = `${region.top}%`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleMarkerClick(region.name, btn);
+      });
 
-        button.addEventListener('click', (event) => {
-            event.stopPropagation();
-            handleMarkerClick(region.name, button);
-        });
+      btn.addEventListener('mouseenter', () => {
+        if (!selectedRegion && typeof updatePanel === 'function') {
+          updatePanel(region.name, true);
+        } else if (!selectedRegion) {
+          showHoverPreview(region.name);
+        }
+      });
 
-        button.addEventListener('mouseenter', () => {
-            if (!selectedRegion && typeof updatePanel === 'function') {
-                updatePanel(region.name, true);
-            }
-        });
+      btn.addEventListener('mouseleave', () => {
+        if (!selectedRegion && typeof resetPanel === 'function') {
+          resetPanel();
+        } else if (!selectedRegion) {
+          hideHoverPreview();
+        }
+      });
 
-        button.addEventListener('mouseleave', () => {
-            if (!selectedRegion && typeof resetPanel === 'function') {
-                resetPanel();
-            }
-        });
+      btn.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          btn.click();
+        }
+      });
 
-        return button;
+      return btn;
     }
 
     function renderMarkers() {
-        markerLayer.innerHTML = '';
-        regionCoords.forEach((region) => {
-            markerLayer.appendChild(createMarker(region));
-        });
+      markerLayer.innerHTML = '';
+      regionCoords.forEach(r => {
+        const m = createMarker(r);
+        markerLayer.appendChild(m);
+      });
     }
 
     function clearSelection() {
-        selectedRegion = null;
-        document.querySelectorAll('.region-marker.selected').forEach((btn) => btn.classList.remove('selected'));
+      selectedRegion = null;
+      document.querySelectorAll('.region-marker.selected').forEach(b => b.classList.remove('selected'));
+      resetPanel();
     }
 
     function handleMarkerClick(regionName, button) {
-        if (selectedRegion === regionName) {
-            clearSelection();
-            if (typeof resetPanel === 'function') resetPanel();
-            return;
-        }
-
+      if (selectedRegion === regionName) {
         clearSelection();
-        button.classList.add('selected');
-        selectedRegion = regionName;
+        return;
+      }
 
-        if (typeof updatePanel === 'function') updatePanel(regionName, false);
+      document.querySelectorAll('.region-marker.selected').forEach(b => b.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedRegion = regionName;
 
-        const festivalPanel = document.getElementById('festival-panel');
-        if (festivalPanel) festivalPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof updatePanel === 'function') {
+        updatePanel(regionName, false);
+      } else {
+        showSelectedRegion(regionName);
+      }
+
+      const desktop = window.matchMedia('(min-width:1024px)').matches;
+      if (desktop) {
+        if (panelBody) panelBody.scrollTop = 0;
+      } else {
+        regionSelected?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function showHoverPreview(regionName) {
+      regionSub.textContent = `${regionName} 지역 정보를 미리보기`;
+    }
+
+    function hideHoverPreview() {
+      regionSub.textContent = '선택한 지역의 축제 정보를 확인하세요';
+    }
+
+    function showSelectedRegion(regionName) {
+      emptyState.style.display = 'none';
+      regionSelected.style.display = 'block';
+      regionTitle.textContent = `${regionName} 축제`;
+      regionSub.textContent = '선택한 지역의 축제 정보를 확인하세요';
+      regionList.innerHTML = '';
+    }
+
+    if (typeof resetPanel !== 'function') {
+      window.resetPanel = function() {
+        emptyState.style.display = '';
+        regionSelected.style.display = 'none';
+        regionTitle.textContent = '';
+        regionSub.textContent = '선택한 지역의 축제 정보를 확인하세요';
+        regionList.innerHTML = '';
+      };
+    }
+
+    if (typeof updatePanel !== 'function') {
+      window.updatePanel = function(regionName, isHover) {
+        if (isHover) {
+          regionSub.textContent = `${regionName} 지역 정보를 미리보기`;
+        } else {
+          showSelectedRegion(regionName);
+        }
+      };
     }
 
     function init() {
-        renderMarkers();
+      renderMarkers();
+      resetPanel();
+      mapContainer.addEventListener('click', () => {});
     }
 
     init();
