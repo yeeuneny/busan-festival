@@ -120,7 +120,7 @@ function goToCalendar() {
     </main>
 
     <!-- 🤖 챗봇 (모든 페이지에서 고정 표시) -->
-    <Chatbot />
+    <Chatbot @select-festival="goToDetail" />
 
   </div>
 </template>
