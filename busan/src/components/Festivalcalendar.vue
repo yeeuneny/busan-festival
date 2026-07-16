@@ -74,7 +74,7 @@ function isFestivalEnded(festival) {
 
 function getFestivalBadge(festival) {
   if (isFestivalOngoing(festival)) return { text: '🟢 진행중', class: 'bg-emerald-500' }
-  if (isFestivalUpcoming(festival)) return { text: '🔵 진행예정', class: 'bg-cyan-500' }
+  if (isFestivalUpcoming(festival)) return { text: '🔵 진행예정', class: 'bg-sky-500' }
   return { text: '⚪ 종료된 행사', class: 'bg-slate-400' }
 }
 
@@ -173,8 +173,10 @@ onMounted(() => {
     <div class="mx-auto max-w-5xl space-y-8">
       <div class="flex items-end justify-between px-1 border-b border-slate-200/60 pb-4">
         <div class="space-y-1">
-          <p class="text-sm font-bold text-slate-900 tracking-tight">월별 축제 달력</p>
-          <h1 class="text-4xl font-extrabold text-indigo-600 tracking-tight font-mono">
+          <p class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            📅 월별 축제 달력
+          </p>
+          <h1 class="text-2xl font-extrabold text-sky-500 tracking-tight font-mono">
             {{ currentYear }}.{{ String(currentMonth + 1).padStart(2, '0') }}
           </h1>
         </div>
@@ -183,7 +185,7 @@ onMounted(() => {
           <button
             @click="prevMonth"
             type="button"
-            class="w-8 h-8 flex items-center justify-center rounded-full border border-indigo-300 hover:border-indigo-600 text-indigo-500 hover:bg-indigo-50 transition"
+            class="w-8 h-8 flex items-center justify-center rounded-full border border-sky-500 hover:border-sky-500 text-sky-500 hover:bg-sky-50 transition"
           >
             ⊖
           </button>
@@ -191,7 +193,7 @@ onMounted(() => {
           <button
             @click="nextMonth"
             type="button"
-            class="w-8 h-8 flex items-center justify-center rounded-full border border-indigo-300 hover:border-indigo-600 text-indigo-500 hover:bg-indigo-50 transition"
+            class="w-8 h-8 flex items-center justify-center rounded-full border border-sky-500 hover:border-sky-500 text-sky-500 hover:bg-sky-50 transition"
           >
             ⊕
           </button>
@@ -201,8 +203,8 @@ onMounted(() => {
             @click="isAllView = !isAllView"
             class="ml-2 px-4 py-1.5 rounded-full text-xs font-bold border transition duration-150"
             :class="isAllView
-              ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20'
-              : 'bg-white text-indigo-600 border-indigo-300 hover:bg-indigo-50'"
+              ? 'bg-sky-500 text-slate-900 border-sky-500 shadow-md shadow-sky-500/20'
+              : 'bg-white text-sky-600 border-sky-300 hover:bg-sky-100'"
           >
             {{ isAllView ? '📅 달력 보기' : '📋 전체 축제 목록' }}
           </button>
@@ -210,7 +212,7 @@ onMounted(() => {
       </div>
 
       <div v-if="!isAllView" class="space-y-8">
-        <div class="rounded-2xl border border-indigo-500 bg-white overflow-hidden shadow-sm">
+        <div class="rounded-2xl border border-sky-500 bg-white overflow-hidden shadow-sm">
           <div class="grid grid-cols-7 border-b border-slate-200 bg-white text-center text-sm font-bold py-3.5 text-slate-700">
             <div v-for="(day, idx) in weekdays" :key="day" :class="{ 'text-rose-500': idx === 0, 'text-blue-500': idx === 6 }">
               {{ day }}
@@ -226,7 +228,7 @@ onMounted(() => {
               :class="[
                 index >= 7 ? 'border-t border-slate-100' : '',
                 cell.dateString && selectedDateStr === cell.dateString
-                  ? 'bg-indigo-600 text-white rounded-xl scale-[0.96] z-10 shadow-md shadow-indigo-600/20'
+                  ? 'bg-sky-500 text-slate-900 rounded-xl scale-[0.96] z-10 shadow-md shadow-sky-500/20'
                   : 'bg-white text-slate-800 hover:bg-slate-50'
               ]"
             >
@@ -234,7 +236,7 @@ onMounted(() => {
                 <span
                   class="text-lg font-bold font-mono block"
                   :class="[
-                    selectedDateStr === cell.dateString ? 'text-white' : (
+                    selectedDateStr === cell.dateString ? 'text-slate-900' : (
                       index % 7 === 0 ? 'text-rose-500' : (index % 7 === 6 ? 'text-blue-500' : 'text-slate-900')
                     )
                   ]"
@@ -244,7 +246,7 @@ onMounted(() => {
 
                 <div
                   class="text-[10px] mt-1 flex flex-col items-center gap-0.5"
-                  :class="selectedDateStr === cell.dateString ? 'text-indigo-100' : 'text-slate-400 font-medium'"
+                  :class="selectedDateStr === cell.dateString ? 'text-sky-100' : 'text-slate-400 font-medium'"
                 >
                   <span>{{ getFestivalsForDay(cell.dateString).length }}개</span>
                   <span class="text-[8px] font-light leading-none -mt-0.5">v</span>
@@ -257,7 +259,7 @@ onMounted(() => {
         <div v-if="getFestivalsForDay(selectedDateStr).length > 0" class="space-y-4">
           <div class="flex items-center gap-2 px-1">
             <h2 class="text-lg font-black text-slate-900">축제 리스트</h2>
-            <span class="text-sm font-bold text-indigo-600">{{ selectedDateLabel }}</span>
+            <span class="text-sm font-bold text-sky-500">{{ selectedDateLabel }}</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -265,7 +267,7 @@ onMounted(() => {
               v-for="festival in getFestivalsForDay(selectedDateStr)"
               :key="festival.contentid"
               @click="goToDetail(festival.contentid)"
-              class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-lg hover:border-indigo-300 transition duration-200 cursor-pointer group"
+              class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-lg hover:border-sky-300 transition duration-200 cursor-pointer group"
             >
               <div class="relative h-40 bg-slate-200 overflow-hidden">
                 <img
@@ -274,20 +276,20 @@ onMounted(() => {
                   :alt="festival.title"
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 />
-                <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-300 to-slate-400 text-white text-sm">
+                <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-300 to-slate-400 text-slate-900 text-sm">
                   No Image
                 </div>
 
                 <div
                   v-if="isFestivalOngoing(festival)"
-                  class="absolute top-2 right-2 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg animate-pulse"
+                  class="absolute top-2 right-2 px-3 py-1 bg-emerald-500 text-slate-900 text-xs font-bold rounded-full shadow-lg animate-pulse"
                 >
                   🟢 진행중
                 </div>
               </div>
 
               <div class="p-4 space-y-2">
-                <h3 class="font-bold text-sm text-slate-900 line-clamp-2 group-hover:text-indigo-600 transition">
+                <h3 class="font-bold text-sm text-slate-900 line-clamp-2 group-hover:text-sky-500 transition">
                   {{ festival.title }}
                 </h3>
                 <p class="text-xs text-slate-500 font-medium">
@@ -299,7 +301,7 @@ onMounted(() => {
 
                 <button
                   @click.stop="goToDetail(festival.contentid)"
-                  class="w-full mt-3 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-xs rounded-lg transition"
+                  class="w-full mt-3 py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-600 font-semibold text-xs rounded-lg transition"
                 >
                   상세보기 →
                 </button>
@@ -319,7 +321,7 @@ onMounted(() => {
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-3">
           <h2 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
             📋 부산 축제 전체 타임라인
-            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-mono">
+            <span class="text-xs font-bold text-sky-500 bg-sky-50 px-2 py-0.5 rounded-md font-mono">
               총 {{ filteredAndSortedAllFestivals.length }}개
             </span>
           </h2>
@@ -329,7 +331,7 @@ onMounted(() => {
               @click="currentCategoryFilter = 'all'"
               type="button"
               class="px-3 py-1.5 rounded-lg transition"
-              :class="currentCategoryFilter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+              :class="currentCategoryFilter === 'all' ? 'bg-sky-600 text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
             >
               전체 보기
             </button>
@@ -337,7 +339,7 @@ onMounted(() => {
               @click="currentCategoryFilter = 'ongoing'"
               type="button"
               class="px-3 py-1.5 rounded-lg transition flex items-center gap-1"
-              :class="currentCategoryFilter === 'ongoing' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+              :class="currentCategoryFilter === 'ongoing' ? 'bg-sky-500 text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
             >
               🟢 진행중
             </button>
@@ -345,7 +347,7 @@ onMounted(() => {
               @click="currentCategoryFilter = 'upcoming'"
               type="button"
               class="px-3 py-1.5 rounded-lg transition flex items-center gap-1"
-              :class="currentCategoryFilter === 'upcoming' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+              :class="currentCategoryFilter === 'upcoming' ? 'bg-sky-500 text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
             >
               🔵 진행예정
             </button>
@@ -353,7 +355,7 @@ onMounted(() => {
               @click="currentCategoryFilter = 'ended'"
               type="button"
               class="px-3 py-1.5 rounded-lg transition flex items-center gap-1"
-              :class="currentCategoryFilter === 'ended' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+              :class="currentCategoryFilter === 'ended' ? 'bg-sky-500 text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
             >
               ⚪ 종료
             </button>
@@ -365,7 +367,7 @@ onMounted(() => {
             v-for="festival in filteredAndSortedAllFestivals"
             :key="festival.contentid"
             @click="goToDetail(festival.contentid)"
-            class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-xl hover:border-indigo-400 transition duration-300 cursor-pointer flex flex-col group"
+            class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-xl hover:border-sky-400 transition duration-300 cursor-pointer flex flex-col group"
           >
             <div class="relative h-44 bg-slate-100 overflow-hidden shrink-0">
               <img
@@ -380,7 +382,7 @@ onMounted(() => {
               </div>
 
               <div
-                class="absolute top-2.5 right-2.5 px-2.5 py-1 text-white text-[10px] font-black rounded-md shadow-md"
+                class="absolute top-2.5 right-2.5 px-2.5 py-1 text-slate-900 text-[10px] font-black rounded-md shadow-md"
                 :class="getFestivalBadge(festival).class"
               >
                 {{ getFestivalBadge(festival).text }}
@@ -389,10 +391,10 @@ onMounted(() => {
 
             <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
               <div class="space-y-1.5">
-                <h3 class="font-extrabold text-sm text-slate-900 group-hover:text-indigo-600 transition line-clamp-1">
+                <h3 class="font-extrabold text-sm text-slate-900 group-hover:text-sky-500 transition line-clamp-1">
                   {{ festival.title }}
                 </h3>
-                <p class="text-xs font-bold text-indigo-500 font-mono tracking-tight">
+                <p class="text-xs font-bold text-sky-500 font-mono tracking-tight">
                   📅 {{ formatDateRange(festival.eventstartdate, festival.eventenddate) }}
                 </p>
               </div>

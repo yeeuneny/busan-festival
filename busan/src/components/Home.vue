@@ -8,6 +8,8 @@ import busanMapImage from '../assets/busan-map.png'
 
 const emit = defineEmits(['select-festival'])
 
+
+
 // 원본 파일의 구·군 좌표 데이터 유지
 const regionCoords = [
   { name: '강서구', left: 22.8, top: 64.9 },
@@ -351,7 +353,7 @@ onMounted(() => {
 .map-header h1 {
   margin: 0;
   color: var(--title-color);
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 700;
 }
 

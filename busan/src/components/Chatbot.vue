@@ -131,18 +131,18 @@ async function sendMessage() {
     <!-- 챗봇 패널 -->
     <div
       v-if="isOpen"
-      class="mt-3 w-[92vw] max-w-sm overflow-hidden rounded-3xl border border-slate-700 bg-slate-900/95 shadow-2xl shadow-black/40 backdrop-blur"
+      class="mt-3 w-[92vw] max-w-sm overflow-hidden rounded-3xl border border-slate-700 bg-slate-50 shadow-2xl shadow-black/40 backdrop-blur"
     >
       <!-- 헤더 -->
       <div class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
         <div>
-          <p class="text-sm font-semibold text-white">부기</p>
+          <p class="text-sm font-semibold text-slate-900">부기</p>
           <p class="text-xs text-slate-400">부산 여행 가이드 챗봇</p>
         </div>
 
         <button
           type="button"
-          class="rounded-full bg-slate-800 px-2.5 py-1 text-sm text-slate-300 hover:bg-slate-700 transition"
+          class="rounded-full bg-slate-800 px-2.5 py-1 text-sm text-slate-600 hover:bg-slate-700 transition"
           @click="toggleChat"
         >
           ✕
@@ -160,7 +160,7 @@ async function sendMessage() {
           :class="[
             'max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-6 whitespace-pre-wrap',
             msg.role === 'user'
-              ? 'self-end bg-cyan-500 text-white rounded-tr-none'
+              ? 'self-end bg-cyan-500 text-slate-900 rounded-tr-none'
               : 'self-start bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700/40'
           ]"
         >
@@ -170,7 +170,7 @@ async function sendMessage() {
         <!-- 답변 로딩 상태 -->
         <div
           v-if="isLoading"
-          class="self-start max-w-[85%] rounded-2xl bg-slate-800 px-3 py-2 text-sm text-slate-300 rounded-tl-none border border-slate-700/40"
+          class="self-start max-w-[85%] rounded-2xl bg-slate-800 px-3 py-2 text-sm text-slate-600 rounded-tl-none border border-slate-700/40"
         >
           <span class="flex items-center gap-2">
             <span class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></span>
@@ -190,20 +190,20 @@ async function sendMessage() {
       </div>
 
       <!-- 💡 입력 영역: HTML 표준 Form 전송 구조로 개편하여 반응성 극대화 -->
-      <form @submit.prevent="sendMessage" class="border-t border-slate-700 p-3 bg-slate-950/20">
+      <form @submit.prevent="sendMessage" class="border-t border-slate-700 p-3 bg-slate-50">
         <div class="flex gap-2">
           <input
             v-model="inputValue"
             type="text"
             placeholder="부산에서 뭐가 좋을까?"
-            class="flex-1 rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white outline-none focus:border-cyan-400 placeholder-slate-500 disabled:opacity-50"
+            class="flex-1 rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400 placeholder-slate-500 disabled:opacity-50"
             :disabled="isLoading"
           />
 
           <button
             type="submit"
             :disabled="isLoading"
-            class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+            class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             전송
           </button>

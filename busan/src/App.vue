@@ -28,53 +28,61 @@ function goToCalendar() {
 </script>
 
 <template>
-  <div class="min-h-screen min-h-screen bg-white px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
-    
-    <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 py-4 shadow-lg shadow-black/20">
-      <div class="mx-auto max-w-7xl flex items-center justify-between gap-4">
-        
-        <div class="flex items-center gap-2 cursor-pointer transition active:scale-95" @click="goToHome">
-          <span class="text-2xl">🌊</span>
-          <span class="text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            BUSAN FESTIVAL MAP
-          </span>
-        </div>
+  <div class="min-h-screen bg-slate-50 text-slate-900">
+    <header
+      class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur"
+    >
+      <div
+        class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8"
+      >
+        <button
+          type="button"
+          class="text-lg font-black tracking-tight text-sky-600"
+          @click="goToHome"
+        >
+          BUSAN FESTIVAL MAP
+        </button>
 
-        <nav class="flex items-center gap-2">
+        <nav class="flex items-center gap-1 rounded-full bg-slate-100 p-1">
           <button
             type="button"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition"
+            :class="
+              currentView === 'home' || currentView === 'detail'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
+            "
             @click="goToHome"
-            class="rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
-            :class="currentView === 'home' || currentView === 'detail'
-              ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
             🗺️ 축제 탐색
           </button>
 
           <button
             type="button"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition"
+            :class="
+              currentView === 'calendar'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
+            "
             @click="goToCalendar"
-            class="rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
-            :class="currentView === 'calendar'
-              ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
             📅 축제 일정
           </button>
 
           <button
             type="button"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition"
+            :class="
+              currentView === 'reviews'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
+            "
             @click="goToReviews"
-            class="rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
-            :class="currentView === 'reviews'
-              ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/20 scale-105'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
             💬 커뮤니티
           </button>
         </nav>
-
       </div>
     </header>
 
@@ -90,7 +98,7 @@ function goToCalendar() {
           <button
             type="button"
             @click="goToHome"
-            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-300 hover:border-cyan-400 hover:text-white transition"
+            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-sky-300 hover:text-sky-600"
           >
             <i class="fa-solid fa-arrow-left"></i> 뒤로가기 (지도 보기)
           </button>

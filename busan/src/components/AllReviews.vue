@@ -74,17 +74,17 @@ onMounted(() => {
   <div class="min-h-screen bg-white px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-5xl space-y-6">
       
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 class="text-3xl font-bold text-white flex items-center gap-2">
+          <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
             💬 전체 방문자 한 줄 후기
           </h1>
-          <p class="mt-2 text-slate-400 text-sm">
+          <p class="mt-2 text-slate-500 text-sm">
             부산 곳곳의 축제를 다녀온 유저들의 솔직하고 다양한 생생한 후기들을 모아보세요.
           </p>
         </div>
         
-        <div class="flex items-center gap-2 bg-cyan-500/10 border border-cyan-400/30 px-4 py-2 rounded-2xl text-cyan-300 font-semibold text-sm w-fit">
+        <div class="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 px-4 py-2 rounded-2xl text-sky-400 font-semibold text-sm w-fit">
           🔥 누적 후기 {{ allReviews.length }}개
         </div>
       </div>
@@ -113,20 +113,20 @@ onMounted(() => {
       <div class="space-y-4">
         <div
           v-if="filteredReviews.length === 0"
-          class="rounded-[24px] border border-dashed border-slate-800 bg-slate-900/20 p-12 text-center text-slate-400"
+          class="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-500"
         >
           <div class="text-4xl mb-3">💬</div>
-          <p class="font-medium text-slate-300">작성된 한 줄 후기가 없습니다.</p>
+          <p class="font-medium text-slate-600">작성된 한 줄 후기가 없습니다.</p>
           <p class="text-xs text-slate-500 mt-1">지도를 통해 축제를 선택하고 생생한 첫 후기를 남겨보세요!</p>
         </div>
 
         <div
           v-for="review in filteredReviews"
           :key="review.id"
-          class="group rounded-2xl border border-slate-800/80 bg-slate-900/50 p-5 transition hover:border-cyan-400/60 hover:bg-slate-900/80 flex flex-col md:flex-row gap-5 items-start"
+          class="group rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-sky-500/60 hover:bg-slate-50 flex flex-col md:flex-row gap-5 items-start"
         >
           <div 
-            class="w-full md:w-28 h-20 rounded-xl overflow-hidden border border-slate-800 flex-shrink-0 bg-slate-950 cursor-pointer"
+            class="w-full md:w-28 h-20 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50 cursor-pointer"
             @click="goToFestival(review.festivalId)"
           >
             <img 
@@ -144,24 +144,24 @@ onMounted(() => {
               <div class="space-y-1">
                 <button 
                   type="button" 
-                  class="text-xs font-bold text-cyan-400 hover:underline text-left block"
+                  class="text-xs font-bold text-sky-500 hover:underline text-left block"
                   @click="goToFestival(review.festivalId)"
                 >
                   📍 {{ review.festivalTitle }}
                 </button>
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-white text-sm">{{ review.nickname }}</span>
+                  <span class="font-bold text-slate-900 text-sm">{{ review.nickname }}</span>
                   <span class="text-xs text-rose-400 font-medium">
                     {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
                   </span>
                 </div>
               </div>
-              <span class="text-[11px] text-slate-500 font-mono">
+              <span class="text-[11px] text-slate-900 font-mono">
                 {{ new Date(review.id).toLocaleDateString() }}
               </span>
             </div>
 
-            <p class="text-sm leading-relaxed text-slate-300 whitespace-pre-wrap">
+            <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
               {{ review.content }}
             </p>
           </div>

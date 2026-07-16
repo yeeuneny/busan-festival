@@ -251,8 +251,8 @@ function filterButtonClass(value) {
   return [
     'rounded-full border px-3 py-2 text-sm font-semibold transition',
     filter.value === value
-      ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20'
-      : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:border-slate-500 hover:text-white'
+      ? 'border-sky-500 bg-sky-500 text-white shadow-lg shadow-sky-200'
+      : 'border-slate-200 bg-slate-200 text-slate-600 hover:border-slate-500 hover:text-slate-900'
   ].join(' ')
 }
 </script>
@@ -269,19 +269,19 @@ function filterButtonClass(value) {
 
       <div class="flex flex-wrap gap-2">
         <button type="button" :class="filterButtonClass('all')" @click="filter = 'all'">
-          [전체 보기]
+          전체 보기
         </button>
         <button type="button" :class="filterButtonClass('attraction')" @click="filter = 'attraction'">
-          [🏖️ 주변 관광지]
+          🏖️ 주변 관광지
         </button>
         <button type="button" :class="filterButtonClass('accommodation')" @click="filter = 'accommodation'">
-          [🏨 주변 숙소]
+          🏨 주변 숙소
         </button>
       </div>
     </div>
 
     <!-- 💡 수정된 핵심 영역: 지도는 항상 켜두고 그 위에 로딩 레이어를 올립니다. -->
-    <div class="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/60">
+    <div class="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
       
       <!-- 실제 지도 박스 (항상 렌더링 상태 유지) -->
       <div ref="mapContainer" class="h-full w-full" />
@@ -289,7 +289,7 @@ function filterButtonClass(value) {
       <!-- 로딩 오버레이 (loading이 true일 때만 지도 위를 완전히 덮음) -->
       <div
         v-if="loading"
-        class="absolute inset-0 z-[5000] flex items-center justify-center bg-slate-950/90 text-slate-300"
+        class="absolute inset-0 z-[5000] flex items-center justify-center bg-slate-50 text-slate-600"
       >
         <div class="flex flex-col items-center gap-2">
           <span class="animate-pulse text-lg font-medium">지도를 불러오는 중입니다...</span>

@@ -520,14 +520,14 @@ onMounted(() => {
         <div class="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
           
           <!-- 🌟 [개선 핵심] 상단 와이드 타이틀 헤더 바 (col-span-full로 2열 전체를 덮어 씌움) -->
-          <div class="col-span-full border-b border-slate-800 pb-5">
-            <div class="mb-3 inline-flex w-fit rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+          <div class="col-span-full border-b border-slate-200 pb-5">
+            <div class="mb-3 inline-flex w-fit rounded-full border border-sky-400/40 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-300">
               부산 축제 상세 소개
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div class="flex flex-wrap items-center gap-3">
-                <h1 class="text-2xl font-black leading-tight sm:text-3xl text-white">
+                <h1 class="text-2xl font-black leading-tight sm:text-3xl text-slate-900">
                   {{ selectedFestival.title }}
                 </h1>
                 
@@ -555,7 +555,7 @@ onMounted(() => {
           </div>
           
           <!-- 📸 좌측 컬럼: 축제 포스터 영역 (제목 아래로 안전하게 정렬됨) -->
-          <div class="flex items-center justify-center bg-slate-950/40 rounded-[24px] border border-slate-200 p-2 overflow-hidden shadow-inner h-[396px]">
+          <div class="flex items-center justify-center bg-slate-50 rounded-[24px] border border-slate-200 p-2 overflow-hidden shadow-inner h-[396px]">
             <div class="w-full h-full overflow-hidden flex items-center justify-center rounded-xl relative select-none">
               <img
                 v-if="selectedFestival.firstimage"
@@ -574,39 +574,39 @@ onMounted(() => {
 
           <!-- 📑 우측 컬럼: 상세 메타데이터 출력 스크롤 플레이트 (사진과 균형을 이루도록 max-h 커스텀) -->
           <div class="flex flex-col justify-start">
-            <div class="space-y-3.5 text-sm text-slate-300 sm:text-base max-h-[396px] overflow-y-auto pr-2 scrollbar-thin">
+            <div class="space-y-3.5 text-sm text-slate-400 sm:text-base max-h-[396px] overflow-y-auto pr-2 scrollbar-thin">
               
               <!-- 1. 축제 시작일과 종료일 -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">🗓️ 축제 기간</p>
-                <p class="mt-1.5 font-semibold text-cyan-300">
+              <div class="rounded-2xl border border-slate-200 bg-slate-40 p-4">
+                <p class="text-xs font-bold text-slate-900 tracking-wider">🗓️ 축제 기간</p>
+                <p class="mt-1.5 font-medium text-slate-900">
                   {{ formatDate(selectedFestival.eventstartdate) }} ~ {{ formatDate(selectedFestival.eventenddate) }}
                 </p>
               </div>
 
               <!-- 2. 축제 장소 -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">📍 축제 장소 (eventplace)</p>
-                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.eventplace || '장소 정보 없음' }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ selectedFestival.addr1 }}</p>
+              <div class="rounded-2xl border border-slate-200 bg-slate-40 p-4">
+                <p class="text-xs font-bold text-slate-900 tracking-wider">📍 축제 장소 (eventplace)</p>
+                <p class="mt-1.5 font-medium text-slate-900">{{ selectedFestival.eventplace || '장소 정보 없음' }}</p>
+                <p class="mt-1 text-xs text-slate-900">{{ selectedFestival.addr1 }}</p>
               </div>
 
               <!-- 3. playtime -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">⏰ 운영 시간 (playtime)</p>
-                <p class="mt-1.5 font-medium text-white">{{ selectedFestival.playtime || '시간 정보 없음' }}</p>
+              <div class="rounded-2xl border border-slate-200 bg-slate-40 p-4">
+                <p class="text-xs font-bold text-slate-900 tracking-wider">⏰ 운영 시간 (playtime)</p>
+                <p class="mt-1.5 font-medium text-slate-900">{{ selectedFestival.playtime || '시간 정보 없음' }}</p>
               </div>
 
               <!-- 4. usetimefestival -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">💰 이용 요금 (usetimefestival)</p>
-                <p class="mt-1.5 font-medium text-white" v-html="selectedFestival.usetimefestival || '정보 없음'"></p>
+              <div class="rounded-2xl border border-slate-200 bg-slate-40 p-4">
+                <p class="text-xs font-bold text-slate-900 tracking-wider">💰 이용 요금 (usetimefestival)</p>
+                <p class="mt-1.5 font-medium text-slate-900" v-html="selectedFestival.usetimefestival || '정보 없음'"></p>
               </div>
 
               <!-- 5. program -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
-                <p class="text-xs font-bold text-slate-400 tracking-wider">📑 주요 프로그램 (program)</p>
-                <p class="mt-1.5 leading-relaxed text-slate-300 whitespace-pre-wrap text-sm">{{ selectedFestival.program || '프로그램 내용이 없습니다.' }}</p>
+              <div class="rounded-2xl border border-slate-200 bg-slate-40 p-4">
+                <p class="text-xs font-bold text-slate-900 tracking-wider">📑 주요 프로그램 (program)</p>
+                <p class="mt-1.5 leading-relaxed text-slate-900 whitespace-pre-wrap text-sm">{{ selectedFestival.program || '프로그램 내용이 없습니다.' }}</p>
               </div>
 
             </div>
@@ -616,14 +616,14 @@ onMounted(() => {
 
 
       <!-- 지도 및 하단 한 줄 리뷰 섹션 데이터 유지 -->
-      <section class="rounded-[28px] border border-slate-800 bg-slate-900/90 p-4 shadow-2xl shadow-black/30 sm:p-6">
+      <section class="rounded-[28px] border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-black/30 sm:p-6">
         <FestivalDetailMap :selectedContentId="resolvedFestivalId" />
       </section>
 
       <section class="rounded-[28px] border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-black/30 sm:p-6">
         <div class="mb-4">
-          <h2 class="text-2xl font-semibold text-white">방문자 한 줄 리뷰</h2>
-          <p class="mt-1 text-sm text-slate-400">
+          <h2 class="text-2xl font-semibold text-slate-900">방문자 한 줄 리뷰</h2>
+          <p class="mt-1 text-sm text-slate-600">
             이 축제에 대한 솔직한 후기를 남겨주세요. 수정과 삭제는 비밀번호가 맞아야 가능합니다.
           </p>
         </div>
@@ -636,7 +636,7 @@ onMounted(() => {
                 v-model="reviewForm.nickname"
                 type="text"
                 placeholder="닉네임을 입력하세요"
-                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-400"
               />
             </div>
 
@@ -644,7 +644,7 @@ onMounted(() => {
               <label class="mb-2 block text-sm text-slate-900">별점</label>
               <select
                 v-model="reviewForm.rating"
-                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-400"
               >
                 <option :value="5">5점</option>
                 <option :value="4">4점</option>
@@ -660,7 +660,7 @@ onMounted(() => {
                 v-model="reviewForm.content"
                 rows="4"
                 placeholder="이 축제에 대한 느낌을 남겨주세요."
-                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-400"
               />
             </div>
 
@@ -670,7 +670,7 @@ onMounted(() => {
                 v-model="reviewForm.password"
                 type="password"
                 placeholder="비밀번호를 입력하세요"
-                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400"
+                class="w-full rounded-2xl border border-slate-700 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-400"
               />
             </div>
           </div>
@@ -678,7 +678,7 @@ onMounted(() => {
           <div class="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="submit"
-              class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-400"
+              class="rounded-full bg-sky-500 px-4 py-2 text-m font-semibold text-slate-900 transition hover:bg-sky-500"
             >
               {{ editingId ? '수정 완료' : '리뷰 등록' }}
             </button>
@@ -701,7 +701,7 @@ onMounted(() => {
         <div class="mt-6 space-y-3">
           <div
             v-if="reviews.length === 0"
-            class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 text-center text-sm text-slate-500"
+            class="rounded-2xl border border-dashed border-slate-700 bg-slate-50 p-5 text-center text-sm text-slate-500"
           >
             아직 등록된 리뷰가 없습니다. 첫 리뷰를 남겨보세요.
           </div>
@@ -717,7 +717,7 @@ onMounted(() => {
                   <p class="font-semibold text-slate-900">{{ review.nickname }}</p>
                   <span
                     v-if="review.isDemo"
-                    class="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-xs font-medium text-cyan-300"
+                    class="rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300"
                   >
                     시연용
                   </span>
@@ -731,7 +731,7 @@ onMounted(() => {
               <div class="flex gap-2">
                 <button
                   type="button"
-                  class="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-900 hover:border-cyan-400 hover:text-cyan-300"
+                  class="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-900 hover:border-sky-400 hover:text-sky-300"
                   @click="startEdit(review)"
                 >
                   수정
