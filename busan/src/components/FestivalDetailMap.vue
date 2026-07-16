@@ -258,11 +258,11 @@ function filterButtonClass(value) {
 </script>
 
 <template>
-  <div class="w-full rounded-3xl border border-slate-700/70 bg-slate-900/80 p-4 shadow-2xl shadow-black/30 backdrop-blur">
+  <div class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-black/30 backdrop-blur">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 class="text-xl font-semibold text-white">주변 탐색 지도</h2>
-        <p class="text-sm text-slate-400">
+        <h2 class="text-xl font-semibold text-slate-900">주변 탐색 지도</h2>
+        <p class="text-sm text-slate-500">
           기준 축제 위치에서 반경 5km 이내의 관광지와 숙소를 확인해보세요.
         </p>
       </div>

@@ -117,7 +117,7 @@ onMounted(loadAllReviews)
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-white px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-5xl space-y-6">
       <div class="flex flex-col gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-center md:justify-between">
         <div>
@@ -134,17 +134,17 @@ onMounted(loadAllReviews)
         </div>
       </div>
 
-      <div class="grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 p-4 md:grid-cols-[1fr_200px]">
+      <div class="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_200px]">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="축제 이름, 후기 내용, 닉네임으로 검색하세요"
-          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-400"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900"
         />
 
         <select
           v-model="selectedRating"
-          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-400"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900"
         >
           <option value="all">⭐ 별점 전체 보기</option>
           <option value="5">⭐⭐⭐⭐⭐ 5점만</option>
