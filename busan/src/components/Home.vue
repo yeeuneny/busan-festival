@@ -172,6 +172,8 @@ onMounted(() => {
         </div>
 
         <section class="intro-card" aria-label="부산 여행 소개">
+          <div class="intro-gradient"></div>
+
           <div class="intro-copy">
             <p class="section-label">부산 여행의 시작</p>
             <h2>바다와 밤의 감성, 축제와 명소가 함께 펼쳐지는 부산</h2>
@@ -220,7 +222,7 @@ onMounted(() => {
             <span>선택된 지역의 축제 정보를 확인하세요</span>
           </div>
 
-          <div class="badge">전체 축제 {{ totalFestivalCount }}</div>
+          
         </div>
 
         <div class="panel-body">

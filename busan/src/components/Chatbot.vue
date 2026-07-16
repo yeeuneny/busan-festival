@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import festivalsData from '../assets/festivals.json'
 
 const emit = defineEmits(['select-festival'])
@@ -293,7 +293,7 @@ async function sendMessage() {
             v-model="inputValue"
             type="text"
             placeholder="부산에서 뭐가 좋을까?"
-            class="flex-1 rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-900 outline-none focus:border-cyan-400 placeholder-slate-500 disabled:opacity-50"
+            class="flex-1 rounded-full border border-slate-700 bg-slate-200 px-4 py-2 text-sm text-slate-900 outline-none focus:border-sky-400 placeholder-slate-500 disabled:opacity-50"
             :disabled="isLoading"
           />
 
