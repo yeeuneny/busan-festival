@@ -122,7 +122,7 @@ async function sendMessage() {
         ],
         temperature: 1,
         max_completion_tokens: 4000
-      })
+      }),
     })
 
     if (!response.ok) {

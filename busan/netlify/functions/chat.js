@@ -1,4 +1,4 @@
-export const handler = async (event) => {
+const handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
   }
@@ -69,7 +69,10 @@ export const handler = async (event) => {
       headers,
       body: JSON.stringify({
         error: 'OpenAI 요청 처리 중 오류가 발생했습니다.',
+        detail: error.message,
       }),
     }
   }
 }
+
+module.exports = { handler }
